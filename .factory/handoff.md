@@ -25,10 +25,10 @@ Implementation commit `812698f85680a923e1f2035ca0fbf3553d57014e` added the real 
 
 ### Clean clone and claims
 
-Clean checkout: `/tmp/restore-drill-clean-polish-1.LLr3PN/repo` at `812698f85680a923e1f2035ca0fbf3553d57014e`.
+Final clean checkout: `/tmp/restore-drill-final-clean-polish-1.vvR5OL/repo` at `205453d05b307450a7fd2a226292af4672307061`.
 
 - `npm ci`: pass, 0 vulnerabilities.
-- Every one of the 13 commands in `.factory/claims.json`: pass independently.
+- Every one of the 13 commands in `.factory/claims.json`: pass independently on the final committed tree.
 - `npm test`: pass — 4 Rust tests and 23 Playwright tests.
 - `npm run build`: pass — release binary and `dist/site/` produced.
 - `cargo fmt --check`: pass.
