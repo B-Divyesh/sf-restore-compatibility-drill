@@ -1,1 +1,1 @@
-Prove a Postgres backup restores into its intended version before an outage
+Prove a Postgres backup restores before an outage

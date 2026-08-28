@@ -25,7 +25,7 @@
     "claim": "The public install instructions produce a working restore-drill command from a fresh directory.",
     "where": "landing install section and README",
     "test": "npm test -- --grep @claim:install-from-site",
-    "sandbox": "fresh temporary directory; clone the source, install with the published command, and run restore-drill --help"
+    "sandbox": "fresh temporary directory; resolve the linked public GitHub main ref, clone and detach that exact public commit, install with the published command, and run restore-drill --help"
   },
   {
     "id": "free-cli",

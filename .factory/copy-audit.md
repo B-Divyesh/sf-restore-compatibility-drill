@@ -171,4 +171,4 @@ All route titles are 60 characters or fewer. All descriptions are 155 characters
 
 ## Catalog description
 
-“Prove a Postgres backup restores into its intended version before an outage” — 12 words, 75 characters, starts with a verb.
+“Prove a Postgres backup restores before an outage” — 8 words, 51 characters, starts with a verb.

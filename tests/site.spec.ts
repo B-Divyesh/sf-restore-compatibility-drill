@@ -75,10 +75,17 @@ test('@claim:install-from-site public instructions install a working command fro
   await expect(page.locator('.command-block code').first()).toContainText(`git clone ${publicRepo}`);
   await expect(page.locator('.command-block code').first()).toContainText('cargo install --path . --locked');
 
+  const remote = execFileSync('git', ['ls-remote', '--exit-code', publicRepo, 'refs/heads/main'], { encoding: 'utf8' }).trim();
+  const [publicRevision, publicRef] = remote.split(/\s+/);
+  expect(publicRef).toBe('refs/heads/main');
+  expect(publicRevision).toMatch(/^[0-9a-f]{40}$/);
+
   const temp = mkdtempSync(join(tmpdir(), 'restore-drill-install-'));
   const checkout = join(temp, 'sf-restore-compatibility-drill');
   const root = join(temp, 'installed');
-  execFileSync('git', ['clone', '--quiet', '--no-local', repo, checkout]);
+  execFileSync('git', ['clone', '--quiet', publicRepo, checkout]);
+  execFileSync('git', ['checkout', '--quiet', '--detach', publicRevision], { cwd: checkout });
+  expect(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: checkout, encoding: 'utf8' }).trim()).toBe(publicRevision);
   execFileSync('cargo', ['install', '--path', '.', '--locked', '--root', root], { cwd: checkout, stdio: 'pipe' });
   const help = spawnSync(join(root, 'bin', 'restore-drill'), ['--help'], { encoding: 'utf8' });
   expect(help.status, help.stderr).toBe(0);
