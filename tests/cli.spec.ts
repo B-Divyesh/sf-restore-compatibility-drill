@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -208,20 +208,65 @@ test('@claim:signed-receipt signs a failure receipt and detects a changed receip
   expect(JSON.parse(changed.stdout).valid).toBe(false);
 });
 
-test('@claim:dump-formats sends a custom-format archive through pg_restore', () => {
+test('@claim:dump-formats restores plain SQL and every documented pg_dump archive format', () => {
   const dir = mkdtempSync(join(tmpdir(), 'restore-drill-format-'));
   const fake = fakeRuntime(dir);
-  const archive = join(dir, 'backup.dump');
-  writeFileSync(archive, Buffer.from('PGDMP\u0001\u000f sample archive'));
-  const result = spawnSync(buildCli(), [
-    'run', '--dump', archive, '--postgres', '15', '--runtime', 'fake-docker',
-    '--receipt', join(dir, 'receipt.json'),
-  ], {
-    cwd: repo, encoding: 'utf8',
-    env: { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log },
-  });
-  expect(result.status, result.stderr).toBe(0);
-  expect(readFileSync(fake.log, 'utf8')).toContain('pg_restore --exit-on-error --no-owner --no-privileges');
+  const plain = join(dir, 'backup.sql');
+  const custom = join(dir, 'backup.dump');
+  const tar = join(dir, 'backup.tar');
+  const directory = join(dir, 'backup-directory');
+  writeFileSync(plain, readFileSync(join(repo, 'examples/sample-backup.sql')));
+  writeFileSync(custom, Buffer.from('PGDMP\u0001\u000f sample custom archive'));
+  writeFileSync(tar, Buffer.from('sample tar archive'));
+  mkdirSync(directory);
+  writeFileSync(join(directory, 'toc.dat'), Buffer.from('sample directory archive'));
+
+  for (const [format, backup, restoreCommand] of [
+    ['plain SQL', plain, 'psql --set ON_ERROR_STOP=on'],
+    ['custom', custom, 'pg_restore --exit-on-error --no-owner --no-privileges'],
+    ['tar', tar, 'pg_restore --exit-on-error --no-owner --no-privileges'],
+    ['directory', directory, 'pg_restore --exit-on-error --no-owner --no-privileges'],
+  ] as const) {
+    writeFileSync(fake.log, '');
+    const result = spawnSync(buildCli(), [
+      'run', '--dump', backup, '--postgres', '15', '--runtime', 'fake-docker',
+      '--receipt', join(dir, `${format.replace(' ', '-')}.json`),
+    ], {
+      cwd: repo, encoding: 'utf8',
+      env: { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log },
+    });
+    expect(result.status, `${format}: ${result.stderr}`).toBe(0);
+    const log = readFileSync(fake.log, 'utf8');
+    expect(log, format).toContain(`${backup}:/drill/input:ro`);
+    expect(log, format).toContain(restoreCommand);
+  }
+});
+
+test('@claim:json-output emits one valid JSON line for pass, compatibility failure, and startup error', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'restore-drill-json-'));
+  const fake = fakeRuntime(dir);
+  const binary = buildCli();
+  const environment = { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log };
+  const outcomes = [
+    spawnSync(binary, [
+      '--json', 'run', '--dump', join(repo, 'examples/sample-backup.sql'), '--postgres', '15',
+      '--runtime', 'fake-docker', '--receipt', join(dir, 'pass.json'),
+    ], { cwd: repo, encoding: 'utf8', env: environment }),
+    spawnSync(binary, [
+      '--json', 'run', '--dump', join(repo, 'examples/incompatible-backup.sql'), '--postgres', '15',
+      '--receipt', join(dir, 'fail.json'),
+    ], { cwd: repo, encoding: 'utf8', env: environment }),
+    spawnSync(binary, [
+      '--json', 'run', '--dump', join(dir, 'missing.sql'), '--postgres', '15',
+      '--receipt', join(dir, 'error.json'),
+    ], { cwd: repo, encoding: 'utf8', env: environment }),
+  ];
+  expect(outcomes.map(result => result.status)).toEqual([0, 2, 3]);
+  expect(outcomes.map(result => {
+    const lines = result.stdout.split(/\r?\n/).filter(line => line.length > 0);
+    expect(lines).toHaveLength(1);
+    return JSON.parse(lines[0]).status;
+  })).toEqual(['pass', 'fail', 'error']);
 });
 
 test('@claim:no-production-url @claim:no-telemetry exposes no remote database option or network client', () => {

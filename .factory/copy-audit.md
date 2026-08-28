@@ -1,4 +1,4 @@
-# Copy audit — perfection loop 2
+# Copy audit — perfection loop 3
 
 Audited 28 August 2026. Counts treat hyphenated terms, commands, and version tokens as one word. No sentence exceeds 22 words or uses a banned plain-words term.
 
@@ -29,7 +29,7 @@ The first screen says what the product does, who needs it, what to do first, and
 | A browser replay of the bundled restore-drill demo run. | 8 | Pass; `sample-demo` |
 | Use the CLI for a real restore. | 7 | Pass; `cli-demo` |
 | One receipt records the evidence | 5 | Pass; heading |
-| The JSON receipt includes the backup hash, target version, checks, duration, and HMAC signature. | 14 | Pass; `signed-receipt` |
+| The JSON receipt records the backup, target version, checks, duration, and a signature you can verify. | 16 | Pass; `signed-receipt` |
 | How the drill works | 4 | Pass; heading |
 | Name the target. | 3 | Pass |
 | Choose a Postgres version, temporary disk size, and expected schemas, extensions, roles, and tables. | 14 | Pass; `data-tmpfs-size`, `schema-readiness` |
@@ -58,8 +58,25 @@ The first screen says what the product does, who needs it, what to do first, and
 | --- | ---: | --- |
 | Demo — sample data, nothing is saved | 7 | Pass; `demo-no-persistence` |
 | Run a sample restore drill | 5 | Pass; heading |
-| This replay uses the backup bundled with the CLI. | 9 | Pass; `sample-demo` |
+| This replay starts with the backup bundled with the CLI. | 10 | Pass; `sample-demo` |
 | It does not read or save your files. | 8 | Pass; `demo-no-persistence` |
+| Signed sample receipt | 3 | Pass; demo result heading |
+| Postgres 15.8 → 15 | 4 | Pass; sample backup and target |
+| Signature verified | 2 | Pass; `signed-receipt` |
+| Starting the bundled sample replay. | 5 | Pass; automatic demo state |
+| Isolation: no network · no published port · temporary data disk | 10 | Pass; `isolated-container` |
+| Starting disposable postgres:15… | 3 | Pass; automatic demo state |
+| Disposable Postgres accepted connections. | 4 | Pass; automatic demo result |
+| Expected extension plpgsql exists. | 4 | Pass; automatic demo result |
+| The backup restored without a database error. | 7 | Pass; automatic demo result |
+| Expected role restore_reader exists. | 4 | Pass; automatic demo result |
+| Expected schema restore_ready exists. | 4 | Pass; `schema-readiness` |
+| Expected table public.restore_probe exists. | 4 | Pass; automatic demo result |
+| Receipt signature verified with the local key. | 7 | Pass; `signed-receipt` |
+| PASS in 4.7s | 3 | Pass; `sample-demo` |
+| Replay sample drill | 3 | Pass; action label |
+| Reset demo | 2 | Pass; action label |
+| Start for real | 3 | Pass; action label points to install |
 | What this sample checks | 4 | Pass; heading |
 | Privacy at Restore Drill | 4 | Pass; heading |
 | The CLI reads the backup path you provide. | 8 | Pass; `backup-local` |
@@ -90,6 +107,7 @@ The first screen says what the product does, who needs it, what to do first, and
 | It restores one backup into the exact disposable Postgres version you choose. | 11 | Pass |
 | It then checks schemas, extensions, roles, and critical tables before writing a signed JSON receipt. | 15 | Pass; `schema-readiness` |
 | The CLI is free and has no telemetry. | 8 | Pass; `free-cli`, `no-telemetry` |
+| The browser demo starts a memory-only replay and shows a signed sample receipt without a second click. | 17 | Pass; `sample-demo`, `demo-no-persistence` |
 | Restore Drill does not accept a database connection string. | 8 | Pass; `no-production-url` |
 | It only starts a local Docker or Podman container with: | 10 | Pass; `isolated-container`, `podman-runtime` |
 | The CLI does not copy or upload the backup. | 8 | Pass; `backup-local` |
@@ -153,4 +171,4 @@ All route titles are 60 characters or fewer. All descriptions are 155 characters
 
 ## Catalog description
 
-“Test a Postgres backup against its recovery target before an outage” — 11 words, 67 characters, starts with a verb.
+“Prove a Postgres backup restores in its target version before an outage” — 12 words, 71 characters, starts with a verb.

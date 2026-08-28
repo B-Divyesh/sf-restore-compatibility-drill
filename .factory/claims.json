@@ -1,10 +1,10 @@
 [
   {
     "id": "sample-demo",
-    "claim": "The browser demo replays the bundled sample to a signed pass result.",
-    "where": "hero action and demo",
+    "claim": "One click opens a fresh browser replay with realistic sample checks and a signed pass result.",
+    "where": "hero action, browser demo, and README",
     "test": "npm test -- --grep @claim:sample-demo",
-    "sandbox": "fresh Chromium context; open the demo and run the bundled sample"
+    "sandbox": "fresh 390x844 Chromium context; click once from the landing page; assert the sample receipt is in the first viewport and the replay completes"
   },
   {
     "id": "browser-privacy",
@@ -15,10 +15,10 @@
   },
   {
     "id": "demo-no-persistence",
-    "claim": "The browser replay does not save sample data and Reset or reload returns it to its first frame.",
+    "claim": "The browser replay does not save sample data; Reset and reload each start a fresh replay.",
     "where": "demo banner, demo introduction, and privacy page",
     "test": "npm test -- --grep @claim:demo-no-persistence",
-    "sandbox": "fresh Chromium context; run, reset, and reload; inspect localStorage, sessionStorage, IndexedDB, and OPFS"
+    "sandbox": "fresh Chromium context; let the replay run, reset, and reload; inspect localStorage, sessionStorage, IndexedDB, and OPFS"
   },
   {
     "id": "install-from-site",
@@ -102,7 +102,14 @@
     "claim": "The CLI restores plain SQL directly and sends pg_dump archives through pg_restore.",
     "where": "CLI help and README",
     "test": "npm test -- --grep @claim:dump-formats",
-    "sandbox": "temporary custom-format header and fake container runtime; assert the real binary invokes pg_restore"
+    "sandbox": "plain SQL plus custom, tar, and directory fixtures; controlled runtime; assert psql or pg_restore and the read-only mounted input path"
+  },
+  {
+    "id": "json-output",
+    "claim": "The --json option prints exactly one valid JSON line for pass, compatibility failure, and startup error outcomes.",
+    "where": "CLI help and README",
+    "test": "npm test -- --grep @claim:json-output",
+    "sandbox": "real binary; controlled pass, preflight failure, and missing-backup startup error; count and parse stdout lines"
   },
   {
     "id": "ci-mode",

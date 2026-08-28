@@ -20,7 +20,7 @@ const escapeHtml = (value: string): string => value.replace(/[&<>'"]/g, char => 
 }[char] ?? char));
 
 const shell = (content: string, demo = false): string => `
-  ${demo ? `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><span><button class="text-button" data-reset-demo>Reset demo</button><a href="/" data-link>Start for real</a></span></aside>` : ''}
+  ${demo ? `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><span><button class="text-button" data-reset-demo>Reset demo</button><a href="/#install">Start for real</a></span></aside>` : ''}
   <header class="site-header">
     <a class="wordmark" href="/" data-link aria-label="Restore Drill home"><span aria-hidden="true" class="wordmark-mark">RD</span>${PRODUCT}</a>
     <nav aria-label="Main navigation">
@@ -44,7 +44,7 @@ const terminal = (interactive = false): string => `
       <div class="terminal-screen" role="region" aria-live="polite" aria-label="Recorded Restore Drill output">
         <p><span class="prompt">$</span> restore-drill demo --postgres 15</p>
         <div id="terminal-output" class="terminal-output">
-          <p class="muted">Ready to restore the bundled sample backup.</p>
+          <p class="muted">${interactive ? 'Starting the bundled sample replay.' : 'Ready to restore the bundled sample backup.'}</p>
         </div>
       </div>
       ${interactive ? '<button class="button stamp-button" id="run-demo">Run sample drill</button>' : '<a class="button stamp-button" href="/?demo=1" data-link>Try it with sample data</a>'}
@@ -77,14 +77,14 @@ const homePage = (): string => shell(`
       <div class="receipt-note">
         <p class="stamp">SIGNED</p>
         <h2>One receipt records the evidence</h2>
-        <p>The JSON receipt includes the backup hash, target version, checks, duration, and HMAC signature.</p>
+        <p>The JSON receipt records the backup, target version, checks, duration, and a signature you can verify.</p>
         <pre><code>{
   "status": "pass",
   "postgres_target": "15",
   "data_tmpfs_size": "2g",
   "backup_sha256": "2ee6…9a1c",
   "signature": {
-    "algorithm": "HMAC-SHA256"
+    "value": "68d3…87f0"
   }
 }</code></pre>
       </div>
@@ -137,7 +137,17 @@ cargo install --path . --locked</code></pre>
 
 const demoPage = (): string => shell(`
   <main id="main" class="demo-page">
-    <section class="page-intro"><p class="eyebrow">Browser sandbox</p><h1 tabindex="-1">Run a sample restore drill</h1><p>This replay uses the backup bundled with the CLI. It does not read or save your files.</p></section>
+    <section class="page-intro"><p class="eyebrow">Browser sandbox</p><h1 tabindex="-1">Run a sample restore drill</h1><p>This replay starts with the backup bundled with the CLI. It does not read or save your files.</p></section>
+    <section class="demo-proof" aria-labelledby="demo-proof-title">
+      <div class="demo-proof-status"><span class="stamp blue">PASS</span><h2 id="demo-proof-title">Signed sample receipt</h2></div>
+      <dl>
+        <div><dt>Backup → target</dt><dd>Postgres 15.8 → 15</dd></div>
+        <div><dt>Schema</dt><dd>restore_ready</dd></div>
+        <div><dt>Role</dt><dd>restore_reader</dd></div>
+        <div><dt>Table</dt><dd>public.restore_probe</dd></div>
+        <div><dt>Receipt</dt><dd>Signature verified</dd></div>
+      </dl>
+    </section>
     ${terminal(true)}
     <section class="sample-sheet" aria-labelledby="sample-title">
       <div><p class="stamp blue">SAMPLE</p><h2 id="sample-title">What this sample checks</h2></div>
@@ -192,12 +202,13 @@ const metadata: Record<Route, { title: string; description: string }> = {
 };
 
 function render(focus = true): void {
+  if (location.pathname === '/demo') history.replaceState(history.state, '', '/?demo=1');
   const route = routeFromPath();
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) return;
   const pageMetadata = metadata[route];
   document.title = pageMetadata.title;
-  const canonicalPath = route === 'demo' && location.search === '?demo=1' ? '/?demo=1' : location.pathname;
+  const canonicalPath = route === 'demo' ? '/?demo=1' : location.pathname;
   const canonical = `${SITE_ORIGIN}${canonicalPath}`;
   document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', canonical);
   document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', pageMetadata.description);
@@ -244,7 +255,7 @@ const demoFrames = [
   ['PASS', 'Expected role restore_reader exists.'],
   ['PASS', 'Expected schema restore_ready exists.'],
   ['PASS', 'Expected table public.restore_probe exists.'],
-  ['SIGNED', 'Receipt written with HMAC-SHA256.'],
+  ['SIGNED', 'Receipt signature verified with the local key.'],
   ['RESULT', 'PASS in 4.7s'],
 ];
 
@@ -258,7 +269,7 @@ function bindDemo(): void {
     timers = [];
     run.disabled = true;
     run.textContent = 'Running sample…';
-    output.innerHTML = '<p class="muted">Isolation: network none · no published port · tmpfs data</p>';
+    output.innerHTML = '<p class="muted">Isolation: no network · no published port · temporary data disk</p>';
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     demoFrames.forEach((frame, index) => timers.push(window.setTimeout(() => {
       const row = document.createElement('p');
@@ -267,7 +278,7 @@ function bindDemo(): void {
       output.append(row);
       if (index === demoFrames.length - 1) {
         run.disabled = false;
-        run.textContent = 'Run sample again';
+        run.textContent = 'Replay sample drill';
       }
     }, reduced ? 0 : 180 * (index + 1))));
   };
@@ -275,9 +286,11 @@ function bindDemo(): void {
   document.querySelector('[data-reset-demo]')?.addEventListener('click', () => {
     timers.forEach(timer => window.clearTimeout(timer));
     timers = [];
-    if (output) output.innerHTML = '<p class="muted">Ready to restore the bundled sample backup.</p>';
-    if (run) { run.disabled = false; run.textContent = 'Run sample drill'; }
+    if (output) output.innerHTML = '<p class="muted">Starting a fresh sample replay.</p>';
+    if (run) { run.disabled = false; run.textContent = 'Replay sample drill'; }
+    play();
   });
+  play();
 }
 
 window.addEventListener('popstate', () => render());

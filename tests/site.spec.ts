@@ -9,21 +9,28 @@ const repo = resolve(import.meta.dirname, '..');
 const publicRepo = 'https://github.com/B-Divyesh/sf-restore-compatibility-drill.git';
 
 test('@claim:sample-demo runs the bundled sample to a signed pass result', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('link', { name: 'Try it with sample data' }).first().click();
   await expect(page).toHaveURL(/\?demo=1$/);
   await expect(page.getByLabel('Demo mode')).toContainText('Demo — sample data, nothing is saved');
-  await page.getByRole('button', { name: 'Run sample drill' }).click();
+  await expect(page.getByRole('button', { name: 'Reset demo' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Start for real' })).toHaveAttribute('href', '/#install');
   await expect(page.getByText('PASS in 4.7s')).toBeVisible();
   await expect(page.getByText('Expected schema restore_ready exists.')).toBeVisible();
-  await expect(page.getByText('Receipt written with HMAC-SHA256.')).toBeVisible();
+  await expect(page.getByText('Receipt signature verified with the local key.')).toBeVisible();
+  for (const value of ['restore_ready', 'restore_reader', 'public.restore_probe', 'Signature verified']) {
+    const box = await page.locator('.demo-proof').getByText(value, { exact: true }).boundingBox();
+    expect(box, value).not.toBeNull();
+    expect(box!.y, value).toBeGreaterThanOrEqual(0);
+    expect(box!.y + box!.height, value).toBeLessThanOrEqual(844);
+  }
 });
 
 test('@claim:browser-privacy demo sends no sample data off-site', async ({ page }) => {
   const requests: Array<{ origin: string; type: string }> = [];
   page.on('request', request => requests.push({ origin: new URL(request.url()).origin, type: request.resourceType() }));
   await page.goto('/?demo=1');
-  await page.getByRole('button', { name: 'Run sample drill' }).click();
   await expect(page.getByText('PASS in 4.7s')).toBeVisible();
   expect([...new Set(requests.map(request => request.origin))]).toEqual([new URL(page.url()).origin]);
   expect(requests.filter(request => ['font', 'websocket', 'eventsource'].includes(request.type))).toEqual([]);
@@ -32,19 +39,17 @@ test('@claim:browser-privacy demo sends no sample data off-site', async ({ page 
 
 test('@claim:demo-no-persistence reset and reload discard all browser replay state', async ({ page }) => {
   await page.goto('/?demo=1');
-  await page.getByRole('button', { name: 'Run sample drill' }).click();
   await expect(page.getByText('PASS in 4.7s')).toBeVisible();
   await page.getByRole('button', { name: 'Reset demo' }).click();
-  await expect(page.getByText('Ready to restore the bundled sample backup.')).toBeVisible();
-  await expect(page.getByText('PASS in 4.7s')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Run sample drill' }).click();
+  await expect(page.getByText('PASS in 4.7s')).toBeVisible();
+  await expect(page.getByText('PASS in 4.7s')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Replay sample drill' }).click();
   await page.waitForTimeout(220);
   await page.getByRole('button', { name: 'Reset demo' }).click();
-  await page.waitForTimeout(1_500);
-  await expect(page.getByText('Ready to restore the bundled sample backup.')).toBeVisible();
-  await expect(page.getByText('PASS in 4.7s')).toHaveCount(0);
+  await expect(page.getByText('PASS in 4.7s')).toBeVisible();
+  await expect(page.getByText('PASS in 4.7s')).toHaveCount(1);
   await page.reload();
-  await expect(page.getByText('Ready to restore the bundled sample backup.')).toBeVisible();
+  await expect(page.getByText('PASS in 4.7s')).toBeVisible();
   const storage = await page.evaluate(async () => {
     const databases = indexedDB.databases ? await indexedDB.databases() : [];
     const opfsEntries: string[] = [];
@@ -127,10 +132,21 @@ test('every route sets its title, metadata, canonical URL, heading, and legal li
     expect(description?.length).toBeLessThanOrEqual(155);
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', title);
     await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', title);
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /^https:\/\/restore-compatibility-drill\.sociobot\.in\//);
+    const canonical = route === '/?demo=1' || route === '/demo'
+      ? 'https://restore-compatibility-drill.sociobot.in/?demo=1'
+      : `https://restore-compatibility-drill.sociobot.in${route === '/missing-page' ? '/missing-page' : route}`;
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical);
+    if (route === '/demo') await expect(page).toHaveURL(/\/\?demo=1$/);
     await expect(page.locator('footer a[href="/privacy"]')).toHaveCount(1);
     await expect(page.locator('footer a[href="/terms"]')).toHaveCount(1);
   }
+});
+
+test('the canonical demo is listed once in the sitemap', async () => {
+  const sitemap = readFileSync(join(repo, 'site/public/sitemap.xml'), 'utf8');
+  expect(sitemap).toContain('<loc>https://restore-compatibility-drill.sociobot.in/?demo=1</loc>');
+  expect(sitemap).not.toContain('<loc>https://restore-compatibility-drill.sociobot.in/demo</loc>');
+  expect(sitemap.match(/<loc>https:\/\/restore-compatibility-drill\.sociobot\.in\/\?demo=1<\/loc>/g)).toHaveLength(1);
 });
 
 test('static host configuration serves known routes and a designed HTTP 404', async ({ request }) => {
@@ -205,4 +221,29 @@ test('390px layout has no horizontal page overflow', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Try it with sample data' }).first()).toBeVisible();
   await expect(page.getByText('Open a browser replay of the sample drill.')).toBeVisible();
+});
+
+test('all three product facts fit in the cold desktop first screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  for (const fact of await page.locator('.plain-facts li').all()) {
+    const box = await fact.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(900);
+  }
+});
+
+test('mobile controls meet the 44px touch target baseline', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/missing-page']) {
+    await page.goto(route);
+    for (const target of await page.locator('a, button').all()) {
+      if (!(await target.isVisible())) continue;
+      const box = await target.boundingBox();
+      expect(box, `${route}: ${await target.textContent()}`).not.toBeNull();
+      expect(box!.width, `${route}: ${await target.textContent()}`).toBeGreaterThanOrEqual(44);
+      expect(box!.height, `${route}: ${await target.textContent()}`).toBeGreaterThanOrEqual(44);
+    }
+  }
 });

@@ -9,6 +9,8 @@ The CLI is free and has no telemetry.
 - Live site: <https://restore-compatibility-drill.sociobot.in>
 - One-click browser demo: <https://restore-compatibility-drill.sociobot.in/?demo=1>
 
+The browser demo starts a memory-only replay and shows a signed sample receipt without a second click.
+
 ## Safety boundary
 
 Restore Drill does not accept a database connection string. It only starts a local Docker or Podman container with:
