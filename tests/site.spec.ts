@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -134,8 +134,7 @@ test('every route sets its title, metadata, canonical URL, heading, and legal li
 });
 
 test('static host configuration serves known routes and a designed HTTP 404', async ({ request }) => {
-  const response = await request.get('/staticwebapp.config.json');
-  const config = await response.json() as {
+  const config = JSON.parse(readFileSync(join(repo, 'site/public/staticwebapp.config.json'), 'utf8')) as {
     navigationFallback?: unknown;
     routes: Array<{ route: string; rewrite?: string; statusCode?: number }>;
     responseOverrides: Record<string, { rewrite: string; statusCode: number }>;
@@ -148,8 +147,11 @@ test('static host configuration serves known routes and a designed HTTP 404', as
   ]));
   expect(config.routes.every(route => !(route.rewrite && route.statusCode))).toBe(true);
   expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html', statusCode: 404 });
-  const page404 = await request.get('/404.html');
-  expect(page404.ok()).toBe(true);
+  expect((await request.get('/404.html')).status()).toBe(200);
+  if (process.env.PLAYWRIGHT_BASE_URL) {
+    for (const route of ['/demo', '/privacy', '/terms']) expect((await request.get(route)).status()).toBe(200);
+    expect((await request.get('/route-that-does-not-exist')).status()).toBe(404);
+  }
 });
 
 test('keyboard skip link moves focus to the main landmark', async ({ page }) => {
@@ -179,13 +181,17 @@ test('service worker keeps the demo available offline and includes the update li
 
 test('@regression:immutable-static-assets fingerprints the hero and configures immutable asset caching', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.hero-art img')).toHaveAttribute('src', /\/assets\/restore-press-[A-Za-z0-9_-]+\.webp$/);
-  const response = await page.request.get(new URL('/staticwebapp.config.json', page.url()).href);
-  const config = await response.json() as { routes: Array<{ route: string; headers?: Record<string, string> }> };
+  const image = page.locator('.hero-art img');
+  await expect(image).toHaveAttribute('src', /\/assets\/restore-press-[A-Za-z0-9_-]+\.webp$/);
+  const config = JSON.parse(readFileSync(join(repo, 'site/public/staticwebapp.config.json'), 'utf8')) as { routes: Array<{ route: string; headers?: Record<string, string> }> };
   expect(config.routes).toContainEqual({
     route: '/assets/*',
     headers: { 'Cache-Control': 'public, max-age=31536000, immutable' },
   });
+  if (process.env.PLAYWRIGHT_BASE_URL) {
+    const assetUrl = new URL((await image.getAttribute('src'))!, page.url()).href;
+    expect((await page.request.get(assetUrl)).headers()['cache-control']).toBe('public, max-age=31536000, immutable');
+  }
 });
 
 test('390px layout has no horizontal page overflow', async ({ page }) => {
