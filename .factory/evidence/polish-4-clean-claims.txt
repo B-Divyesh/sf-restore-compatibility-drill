@@ -1,0 +1,36 @@
+# Perfection loop 4 — clean-clone claim evidence
+
+Commit: c6191d1fe1df0c01e62a7af49514f4edf97e1923
+Clone: /tmp/restore-drill-polish-4-clean.apFRLB/repo
+Install: npm ci — PASS, 0 vulnerabilities
+
+PASS @claim:sample-demo
+PASS @claim:browser-privacy
+PASS @claim:demo-no-persistence
+PASS @claim:install-from-site
+PASS @claim:free-cli
+PASS @claim:isolated-container
+PASS @claim:data-tmpfs-size
+PASS @claim:backup-local
+PASS @claim:newer-version
+PASS @claim:signed-receipt
+PASS @claim:default-signing-key
+PASS @claim:schema-readiness
+PASS @claim:cli-demo
+PASS @claim:podman-runtime
+PASS @claim:dump-formats
+PASS @claim:json-output
+PASS @claim:ci-mode
+PASS @claim:no-production-url
+PASS @claim:no-telemetry
+
+Each result came from its exact `.factory/claims.json` command, run separately.
+
+Full clean-clone gates:
+- `npm test` — PASS: 5 Rust tests and 32 Playwright tests.
+- `npm run build` — PASS: release binary and `dist/site/` produced.
+- `cargo fmt --check` — PASS.
+- `cargo clippy --all-targets -- -D warnings` — PASS.
+- `cargo package --no-verify` — PASS: `target/package/restore-drill-0.1.0.crate`.
+- `npm audit --audit-level=high` — PASS: 0 vulnerabilities.
+- `git diff --check` — PASS.

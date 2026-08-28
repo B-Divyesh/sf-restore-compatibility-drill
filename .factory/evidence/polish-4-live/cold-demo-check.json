@@ -1,0 +1,29 @@
+{
+  "checked_at": "2026-08-28T17:16:00Z",
+  "viewport": "390x844",
+  "url": "https://restore-compatibility-drill.sociobot.in/?demo=1",
+  "banner": "Demo — sample data, nothing is saved",
+  "controls": ["Reset demo", "Start for real"],
+  "proof_box": {
+    "x": 16,
+    "y": 396.796875,
+    "width": 358,
+    "height": 290.375,
+    "bottom": 687.171875
+  },
+  "request_origins": ["https://restore-compatibility-drill.sociobot.in"],
+  "storage_before_reset": {
+    "localStorage": [],
+    "sessionStorage": [],
+    "indexedDB": [],
+    "opfs": []
+  },
+  "storage_after_reset_and_reload": {
+    "localStorage": [],
+    "sessionStorage": [],
+    "indexedDB": [],
+    "opfs": []
+  },
+  "offline_heading": "Run a sample restore drill",
+  "console_errors": []
+}
