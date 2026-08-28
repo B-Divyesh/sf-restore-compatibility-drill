@@ -37,7 +37,7 @@ Every current and earlier finding is closed. No severity was deferred.
 | --- | --- |
 | First screen | Five-word job headline, 13-word audience sentence, one sample action with a literal outcome, and three facts remain visible at 390×844. Screenshot: `.factory/evidence/polish-2-live-home/screenshot-mobile.png`. |
 | One-click isolated sample | `/?demo=1` opens populated sample data with a persistent banner, Reset demo, and Start for real. `sample-demo`, `demo-no-persistence`, and `browser-privacy` passed locally and live. |
-| Claims | `.factory/claims.json` has 18 entries. Every exact manifest command passed separately from `/tmp/restore-drill-polish-2-clean.yKjzIs/repo`. |
+| Claims | `.factory/claims.json` has 18 entries. Every exact manifest command passed separately from final clean clone `/tmp/restore-drill-polish-2-final.IvzR0z/repo` at `0e1b5cc`. |
 | Routing, titles, focus, 404, legal | The live 28-test suite passed route titles, metadata, canonical URLs, one `h1`, heading focus after history navigation, Privacy/Terms links, and an actual HTTP 404. |
 | Mobile and accessibility | All six routes passed Playwright axe serious/critical scans. The 390 px overflow test passed. Worker verification found one `h1`, one main landmark, complete alt text, labelled buttons, and no console errors. |
 | Privacy and offline | Demo traffic stayed same-origin, all browser stores stayed empty, and `/demo` reloaded offline after service-worker activation. |

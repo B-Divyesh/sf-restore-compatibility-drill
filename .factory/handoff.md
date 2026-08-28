@@ -24,7 +24,7 @@ No known product gaps or deferred findings remain.
 - Live URL: <https://restore-compatibility-drill.sociobot.in>.
 - Deployment ID: `c6a0aeec-a6ac-4af6-8596-14b74237ec1d`.
 
-Fresh clone `/tmp/restore-drill-polish-2-clean.yKjzIs/repo`:
+Final fresh clone `/tmp/restore-drill-polish-2-final.IvzR0z/repo` at `0e1b5cc4157791f4a35992e00bb3ed5c8097f886`:
 
 - `npm ci`: passed; 0 vulnerabilities.
 - Every one of the 18 exact commands in `.factory/claims.json`: passed separately.
