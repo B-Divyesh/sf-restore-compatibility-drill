@@ -1,0 +1,31 @@
+{
+  "slug": "restore-compatibility-drill",
+  "title": "Restore Drill",
+  "territory": "devtools-data",
+  "user": "Teams relying on managed Postgres backups who need to prove that a recent backup restores into their intended version and extension set before an outage.",
+  "evidence": [
+    {
+      "url": "https://hn.algolia.com/api/v1/items/49472642",
+      "date": "2026-08-27",
+      "quote_or_summary": "An Ask HN report describes a production Supabase database remaining down for 37 hours after a billing downgrade and restoration steps."
+    },
+    {
+      "url": "https://github.com/supabase/supabase/issues/40625",
+      "date": "2025-11-19",
+      "quote_or_summary": "A Supabase issue reports logical backup commands from PostgreSQL 17.6+ failing when restored to PostgreSQL 15.8."
+    }
+  ],
+  "recurrence": "A recent outage report and a concrete backup-version incompatibility show that possessing an export does not prove a recoverable service.",
+  "current_workaround": "Download a dump, assume it works, test restore only during an incident, or manually inspect SQL headers and extensions.",
+  "incumbents_and_gap": "Managed providers create backups and pg_restore executes them; neither supplies a small recurring compatibility drill with a machine-readable receipt and known version/extension mismatch explanation.",
+  "smallest_useful_product": "A local/container CLI that restores a selected sanitized or full backup into an explicit disposable Postgres version, checks extensions/roles/schema readiness, times the run, and writes a signed receipt. Non-goals: backup storage, production restore, or database hosting.",
+  "success_measure": "A weekly pilot catches an intentionally introduced version or extension incompatibility before a recovery event and produces a pass/fail receipt in under 20 minutes.",
+  "artifact_class": "cli",
+  "monetization": "one-time — a local recovery-control utility suits teams avoiding additional data-hosting vendors.",
+  "constraints": "Use disposable isolated containers; encryption at rest for any saved dump; never run against production connection strings; account for provider backup terms and large-data cost.",
+  "est_build_effort": "M",
+  "why_distinct": "It proves restore compatibility on a schedule rather than offering another backup destination or migration framework.",
+  "confidence": 5,
+  "state": "RESEARCHED",
+  "summary": "Prove a Postgres backup restores before an outage"
+}
