@@ -1,5 +1,17 @@
 # Restore Drill v0.1.0 repair handoff
 
+## Independent verification 2 — PASS
+
+Candidate `ea421c2dfa3eaf8d58a7a49b02b6d19c66eb3f0d` is **PASS** for release. Independent verification on 2026-08-28 confirmed that the live deployment at <https://restore-compatibility-drill.sociobot.in> is byte-for-byte equal to this candidate's generated HTML, JS, and CSS. The prior checkout failure is resolved by shipping the product as an honestly free CLI with no unavailable checkout or billing call.
+
+Verification passed all 11 `.factory/claims.json` commands independently, then `npm test` (4 Rust tests and 18 Playwright tests), `npm run build`, `cargo fmt --check`, `git diff --check`, and `cargo package`. A clean consumer installation from the packaged crate exposed the documented CLI and correctly produced/verified a signed PostgreSQL 17.6-to-15.8 incompatibility receipt (exit 2); malformed version input returned documented recovery JSON (exit 3).
+
+Live checks passed cold first-read/plain words, the one-click `/demo` route and sample replay, desktop and 390 px mobile, keyboard skip link/focus, reduced motion, service-worker offline reload/update lifecycle, no console/page errors, and axe serious/critical scans on all five routes. The live response policy is self-only CSP plus HSTS/nosniff/referrer/permissions headers; demo requests were same-origin. Live Lighthouse mobile was Performance 100 and Accessibility 100 (LCP 1.8 s, CLS 0); production JS is 4.46 KB gzip, CSS 3.19 KB gzip, and hero image 196.92 KB.
+
+No Docker, Podman, or Docker socket is installed in this verification worker. The real-container smoke test could not be fresh-run here; the controlled-runtime suite verifies the exact container isolation/mount/restore invocation, and a `restore-drill demo --postgres 15` smoke run on a Docker/Podman release host remains recommended. This is an environment limitation, not a defect observed in the candidate.
+
+Full evidence: `.factory/verification-2.md`.
+
 ## Repair summary
 
 This repair resolves the release-blocking verification finding from candidate `6b9e2e87ccc65d091f4ef195d20fba4e2f89283f`.
