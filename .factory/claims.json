@@ -67,7 +67,7 @@
     "claim": "Every started drill writes an HMAC-SHA256 signed JSON receipt, including a preflight failure.",
     "where": "receipt preview, how it works, and README",
     "test": "npm test -- --grep @claim:signed-receipt",
-    "sandbox": "temporary directory; create, verify, change, and reject a signed receipt"
+    "sandbox": "temporary directory and controlled runtime; create and verify successful and failed signed receipts, then change and reject one"
   },
   {
     "id": "default-signing-key",

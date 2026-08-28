@@ -188,22 +188,49 @@ test('@claim:newer-version catches a newer dump before a container starts', () =
   expect(body.checks.map((check: { id: string }) => check.id)).toContain('transaction-timeout-setting');
 });
 
-test('@claim:signed-receipt signs a failure receipt and detects a changed receipt', () => {
+test('@claim:signed-receipt signs successful and failed receipts and detects a changed receipt', () => {
   const dir = mkdtempSync(join(tmpdir(), 'restore-drill-signature-'));
-  const receipt = join(dir, 'receipt.json');
-  const key = join(dir, 'receipt.key');
-  spawnSync(buildCli(), [
+  const fake = fakeRuntime(dir);
+  const binary = buildCli();
+  const environment = { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log };
+
+  const passReceipt = join(dir, 'pass.json');
+  const passKey = join(dir, 'pass.key');
+  const passed = spawnSync(binary, [
+    'run', '--dump', join(repo, 'examples/sample-backup.sql'), '--postgres', '15',
+    '--runtime', 'fake-docker', '--receipt', passReceipt, '--signing-key', passKey,
+  ], { cwd: repo, encoding: 'utf8', env: environment });
+  expect(passed.status, passed.stderr).toBe(0);
+  const passBody = JSON.parse(readFileSync(passReceipt, 'utf8'));
+  expect(passBody.status).toBe('pass');
+  expect(passBody.signature.algorithm).toBe('HMAC-SHA256');
+  const verifiedPass = spawnSync(binary, [
+    '--json', 'verify-receipt', '--receipt', passReceipt, '--signing-key', passKey,
+  ], { encoding: 'utf8' });
+  expect(verifiedPass.status, verifiedPass.stderr).toBe(0);
+  expect(JSON.parse(verifiedPass.stdout)).toEqual(expect.objectContaining({ valid: true }));
+
+  const failedReceipt = join(dir, 'failed.json');
+  const failedKey = join(dir, 'failed.key');
+  const failed = spawnSync(binary, [
     'run', '--dump', join(repo, 'examples/incompatible-backup.sql'), '--postgres', '15',
-    '--receipt', receipt, '--signing-key', key,
+    '--receipt', failedReceipt, '--signing-key', failedKey,
   ], { cwd: repo, encoding: 'utf8' });
-  const valid = spawnSync(buildCli(), ['--json', 'verify-receipt', '--receipt', receipt, '--signing-key', key], { encoding: 'utf8' });
-  expect(valid.status).toBe(0);
-  expect(JSON.parse(valid.stdout).valid).toBe(true);
-  const body = JSON.parse(readFileSync(receipt, 'utf8'));
-  expect(body.signature.algorithm).toBe('HMAC-SHA256');
-  body.postgres_target = '16';
-  writeFileSync(receipt, JSON.stringify(body));
-  const changed = spawnSync(buildCli(), ['--json', 'verify-receipt', '--receipt', receipt, '--signing-key', key], { encoding: 'utf8' });
+  expect(failed.status, failed.stderr).toBe(2);
+  const failedBody = JSON.parse(readFileSync(failedReceipt, 'utf8'));
+  expect(failedBody.status).toBe('fail');
+  expect(failedBody.signature.algorithm).toBe('HMAC-SHA256');
+  const verifiedFailure = spawnSync(binary, [
+    '--json', 'verify-receipt', '--receipt', failedReceipt, '--signing-key', failedKey,
+  ], { encoding: 'utf8' });
+  expect(verifiedFailure.status, verifiedFailure.stderr).toBe(0);
+  expect(JSON.parse(verifiedFailure.stdout)).toEqual(expect.objectContaining({ valid: true }));
+
+  failedBody.postgres_target = '16';
+  writeFileSync(failedReceipt, JSON.stringify(failedBody));
+  const changed = spawnSync(binary, [
+    '--json', 'verify-receipt', '--receipt', failedReceipt, '--signing-key', failedKey,
+  ], { encoding: 'utf8' });
   expect(changed.status).toBe(2);
   expect(JSON.parse(changed.stdout).valid).toBe(false);
 });
