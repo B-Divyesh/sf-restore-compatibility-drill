@@ -1,0 +1,75 @@
+{
+  "artifacts": [
+    {
+      "path": "/index.html",
+      "localSha256": "f6cba7ae79c9a106536417c4ae387400b4a68194d4d9c60165f6a9dd610a63fc",
+      "liveSha256": "f6cba7ae79c9a106536417c4ae387400b4a68194d4d9c60165f6a9dd610a63fc",
+      "match": true,
+      "cacheControl": "public, must-revalidate, max-age=30"
+    },
+    {
+      "path": "/assets/index-txjFCPkn.js",
+      "localSha256": "d38f97224707c5a2175de14501767fd41f279b224ed4a22142c6b18b92296aa5",
+      "liveSha256": "d38f97224707c5a2175de14501767fd41f279b224ed4a22142c6b18b92296aa5",
+      "match": true,
+      "cacheControl": "public, max-age=31536000, immutable"
+    },
+    {
+      "path": "/assets/index-Cz6EHkfQ.css",
+      "localSha256": "918d1fc81747ef127a4712852ae675385afe37eefc19c22c7e9e27d492f93574",
+      "liveSha256": "918d1fc81747ef127a4712852ae675385afe37eefc19c22c7e9e27d492f93574",
+      "match": true,
+      "cacheControl": "public, max-age=31536000, immutable"
+    }
+  ],
+  "links": [
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/#main",
+      "status": "fragment"
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/",
+      "status": 200
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/?demo=1",
+      "status": 200
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/#install",
+      "status": "fragment"
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/privacy",
+      "status": 200
+    },
+    {
+      "url": "https://github.com/B-Divyesh/sf-restore-compatibility-drill",
+      "status": 200
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/terms",
+      "status": 200
+    },
+    {
+      "url": "https://sociobot.in/",
+      "status": 200
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/?demo=1#main",
+      "status": "fragment"
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/privacy#main",
+      "status": "fragment"
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/terms#main",
+      "status": "fragment"
+    },
+    {
+      "url": "https://restore-compatibility-drill.sociobot.in/cold-missing-page#main",
+      "status": "fragment"
+    }
+  ]
+}

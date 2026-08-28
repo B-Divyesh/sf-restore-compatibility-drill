@@ -1,32 +1,67 @@
-# Review 3 handoff — Restore Drill
+# Restore Drill — perfection loop 3 handoff
 
 ## Outcome
 
-Adversarial first-read review 3 is complete at commit `b8afebcee8f1a5e03bdaa1a478cd0509b266fba9`. The verdict in `.factory/review-3.md` is **FAIL** with one blocking and five non-blocking findings. Product code was not modified.
+All six review-3 findings and every earlier review/verification finding are closed. The repair is live at <https://restore-compatibility-drill.sociobot.in>.
 
-The blocker is the phone demo experience: after **Try it with sample data**, the first 390×844 viewport shows an idle terminal. The control that starts the replay and the realistic sample identifiers are below the fold, so the product is not already in use after one click.
+- Implementation commit: `c04e2d8cf830ebc36a6d67c4c06ac3f505fe42c9`
+- Azure deployment: `bb4c9bc7-f981-4029-8f4f-2069eb92e9cb`
+- Artifact class: Rust CLI plus static Vite landing/docs site
+- Catalog: “Prove a Postgres backup restores in its target version before an outage”
 
-## Verification performed
+## What changed
 
-- Opened production cold in fresh Chromium contexts at 390×844 and 1440×900; captured `/tmp/review-3-mobile-cold.png`, `/tmp/review-3-desktop-cold.png`, and `/tmp/review-3-demo-before.png`.
-- Ran the full production Playwright suite with `PLAYWRIGHT_BASE_URL=https://restore-compatibility-drill.sociobot.in`: 28/28 passed.
-- Crawled all links across home, demo, privacy, terms, and 404 routes; all unique destinations returned 200.
-- Exercised demo run, Reset, reload, storage inspection, same-origin network interception, offline reload, routing, focus, metadata, and HTTP 404 behavior.
-- Ran `/opt/fleet/lib/verify-url.sh` against production; it reported no console errors, one `h1`, `lang=en`, a main landmark, complete image alt text, and labelled buttons.
-- Cloned the reviewed commit into `/tmp/restore-drill-review-3.MttQWq/repo`, ran `npm ci`, and ran all 18 exact commands from `.factory/claims.json` independently; all passed.
-- In the same clean clone, `npm test`, `npm run build`, `cargo fmt --check`, and `git diff --check` passed. The build produced the release binary and `dist/site/`.
-- Ran the real CLI demo from `/tmp`; it created an isolated demo directory and signed error receipt, then returned the documented runtime error because Docker and Podman are unavailable in this worker. The controlled-runtime CLI demo claim passed.
-- Confirmed GitHub `main` and the reviewed checkout both point to `b8afebcee8f1a5e03bdaa1a478cd0509b266fba9`.
+- The canonical `/?demo=1` path now starts a fresh sample replay automatically.
+- The first phone viewport shows the signed pass state, versions, schema, role, and table.
+- Reset restarts an isolated in-memory replay. Start for real lands on the install section.
+- The dump-format claim now covers plain SQL, custom, tar, and directory backups.
+- A new `json-output` claim proves one valid JSON line for pass, fail, and error outcomes.
+- `/demo` normalizes to `/?demo=1`; both use one canonical, which appears once in the sitemap.
+- Landing-page HMAC jargon was replaced with plain words.
+- Desktop hero geometry now keeps all three required facts above 900 px.
+- Focus contrast, phone touch targets, transient animation contrast, and service-worker cache versioning were tightened.
 
-## Findings left for the repair loop
+The risograph tactile-collage identity and original generated art remain intact.
 
-- `F-3-1` BLOCKING: demo is not already running or complete after one click on a phone.
-- `F-3-2` P1: the dump-format claim test covers custom format only, not plain SQL, tar, and directory variants as declared.
-- `F-3-3` P2: the README's one-line `--json` output promise has no claims entry.
-- `F-3-4` P2: `/?demo=1` and `/demo` self-canonicalize separately, and `/demo` is absent from the sitemap.
-- `F-3-5` P2: unexplained HMAC jargon remains on the landing page.
-- `F-3-6` P2: the third required hero fact is clipped below a 1440×900 first viewport.
+## Verification
 
-## Next step
+Fresh public clone: `/tmp/restore-drill-polish-3-clean.ZjyMq9/repo` at `c04e2d8`.
 
-Repair all six findings, add the specified regression/claim assertions, deploy, and rerun the entire adversarial checklist from a clean clone and fresh live browser contexts.
+- All 19 exact commands in `.factory/claims.json`: pass independently.
+- `npm test`: 5 Rust tests and 32 Playwright tests pass.
+- `npm run build`: pass; creates `target/release/restore-drill` and `dist/site/`.
+- `cargo fmt --check`: pass.
+- `cargo clippy --all-targets -- -D warnings`: pass.
+- `cargo package --no-verify`: pass; package is ready but was not published.
+- `npm audit --audit-level=high`: 0 vulnerabilities.
+- `git diff --check`: pass.
+
+Production verification:
+
+- `PLAYWRIGHT_BASE_URL=https://restore-compatibility-drill.sociobot.in npm test`: 32/32 pass.
+- `/opt/fleet/lib/verify-url.sh` on `/` and `/?demo=1`: pass with no console errors.
+- Axe integration: zero serious or critical findings on home, both demo entry paths, privacy, terms, and 404.
+- Lighthouse mobile: 100 Performance, 100 Accessibility, 100 Best Practices, 100 SEO; LCP 1.805 s, CLS 0, TBT 36 ms.
+- Live HTML, JS, and CSS SHA-256 values match `dist/site/` exactly.
+- JS: 14.36 KB raw / 5.11 KB gzip. CSS: 12.35 KB raw / 3.52 KB gzip. Hero WebP: 196.92 KB.
+- Home, demo, privacy, and terms return 200. An unknown route returns 404.
+- Every crawled link returns 200 or is a valid same-page fragment.
+- Fingerprinted JS and CSS return one-year immutable cache headers.
+
+Evidence is under `.factory/evidence/polish-3-local/` and `.factory/evidence/polish-3-live/`.
+
+## Run and verify
+
+```sh
+npm ci
+npm test
+npm run build
+```
+
+Run one declared claim with `npm test -- --grep @claim:<id>`. Run the site with `npm run dev`. Install the CLI with the clone and Cargo commands in README.
+
+## Known gaps and next steps
+
+Known product gaps: none.
+
+This worker has no Docker or Podman executable or socket. The real binary was therefore verified with the controlled runtime integration suite, including restore command selection, isolation, cleanup, receipts, and exit codes. Registry publication remains factory-owned and was not performed.

@@ -1,0 +1,25 @@
+Clean public clone: /tmp/restore-drill-polish-3-clean.ZjyMq9/repo
+Commit: c04e2d8cf830ebc36a6d67c4c06ac3f505fe42c9
+
+sample-demo PASS 18.2s
+browser-privacy PASS 7.7s
+demo-no-persistence PASS 13.7s
+install-from-site PASS 28.7s
+free-cli PASS 6.0s
+isolated-container PASS 6.7s
+data-tmpfs-size PASS 5.6s
+backup-local PASS 5.4s
+newer-version PASS 5.3s
+signed-receipt PASS 5.3s
+default-signing-key PASS 5.3s
+schema-readiness PASS 6.0s
+cli-demo PASS 5.5s
+podman-runtime PASS 5.4s
+dump-formats PASS 6.0s
+json-output PASS 5.4s
+ci-mode PASS 5.5s
+no-production-url PASS 5.3s
+no-telemetry PASS 5.3s
+
+Full clean-clone suite: 5 Rust tests and 32 Playwright tests passed.
+Release build, cargo fmt, clippy -D warnings, cargo package, npm audit, and git diff --check passed.
