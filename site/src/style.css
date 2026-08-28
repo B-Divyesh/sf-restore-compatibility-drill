@@ -32,10 +32,10 @@ a:hover { text-decoration-thickness: 3px; }
 .skip-link:focus { transform: translateY(0); }
 
 .site-header { max-width: 1240px; min-height: 80px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 2px solid var(--ink); }
-.wordmark { display: flex; align-items: center; gap: 10px; color: var(--ink); font-family: var(--display); text-decoration: none; letter-spacing: -0.04em; }
+.wordmark { display: flex; align-items: center; min-height: 44px; gap: 10px; color: var(--ink); font-family: var(--display); text-decoration: none; letter-spacing: -0.04em; }
 .wordmark-mark { display: grid; place-items: center; width: 42px; height: 42px; border: 2px solid var(--ink); color: var(--paper); background: var(--red); box-shadow: 4px 4px 0 var(--blue); font-family: var(--body); font-size: 13px; letter-spacing: 0; transform: rotate(-2deg); }
 .site-header nav { display: flex; gap: 24px; align-items: center; }
-.site-header nav a { color: var(--ink); font-weight: 700; }
+.site-header nav a { display: inline-flex; min-height: 44px; align-items: center; color: var(--ink); font-weight: 700; }
 
 main { display: block; }
 h1, h2, h3 { font-family: var(--display); line-height: .98; letter-spacing: -0.055em; text-wrap: balance; }
@@ -95,8 +95,8 @@ p { max-width: 68ch; }
 .install .eyebrow { color: #ffe29a; }
 .install a { color: #fff; }
 .command-block { min-width: 0; }
-.command-block pre { margin: 0 0 20px; padding: 24px; overflow-x: auto; border: 2px solid #fffaf0; background: var(--night); color: var(--night-text); }
-.copy-button { float: right; position: relative; z-index: 1; min-width: 74px; margin: 8px; border: 1px solid #fffaf0; color: #fffaf0; background: transparent; cursor: pointer; }
+.command-block pre { margin: 0 0 20px; padding: 24px; overflow-wrap: anywhere; white-space: pre-wrap; border: 2px solid #fffaf0; background: var(--night); color: var(--night-text); }
+.copy-button { float: right; position: relative; z-index: 1; min-width: 74px; margin: 8px; padding-inline: 12px; border: 1px solid #fffaf0; color: #fffaf0; background: transparent; cursor: pointer; }
 
 .boundaries { max-width: 1192px; margin: 0 auto; padding: 104px 24px; display: grid; grid-template-columns: 5fr 6fr; gap: 72px; }
 .boundaries ul { margin: 0; padding: 0; list-style: none; }
@@ -114,7 +114,7 @@ p { max-width: 68ch; }
 .sample-sheet dd { margin: 0; }
 .demo-banner { min-height: 48px; padding: 8px max(24px, calc((100vw - 1192px) / 2)); display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #fff; background: var(--blue); }
 .demo-banner span { display: flex; gap: 18px; align-items: center; }
-.demo-banner a, .text-button { color: #fff; }
+.demo-banner a, .text-button { display: inline-flex; min-height: 44px; align-items: center; color: #fff; }
 .text-button { min-height: 44px; padding: 0; border: 0; background: transparent; text-decoration: underline; cursor: pointer; }
 
 .legal-page article { padding-bottom: 112px; }
@@ -125,6 +125,7 @@ p { max-width: 68ch; }
 footer { padding: 40px max(24px, calc((100vw - 1192px) / 2)); display: grid; grid-template-columns: 1fr auto; gap: 16px 32px; border-top: 2px solid var(--ink); }
 footer p { margin: 0; }
 footer nav { display: flex; gap: 24px; }
+footer nav a { display: inline-flex; min-height: 44px; align-items: center; }
 .build { grid-column: 1 / -1; color: var(--muted); font-size: .8125rem; }
 
 @keyframes stamp-in { from { opacity: 0; transform: translate(5px, -3px); } to { opacity: 1; transform: translate(0); } }
@@ -147,7 +148,7 @@ footer nav { display: flex; gap: 24px; }
   body { font-size: 16px; }
   .site-header { padding-inline: 16px; }
   .wordmark { font-size: .86rem; }
-  .wordmark-mark { width: 36px; height: 36px; }
+  .wordmark-mark { width: 38px; height: 38px; }
   .site-header nav { font-size: .875rem; }
   .hero { padding: 40px 16px 72px; gap: 40px; }
   h1 { font-size: 2.7rem; }
@@ -163,6 +164,7 @@ footer nav { display: flex; gap: 24px; }
   .sample-sheet { width: calc(100% - 32px); padding: 28px 20px; }
   .sample-sheet dl div { grid-template-columns: 1fr; gap: 0; }
   .demo-banner { align-items: flex-start; flex-direction: column; padding: 10px 16px; }
+  .demo-banner span { width: 100%; justify-content: space-between; }
   footer { padding-inline: 16px; }
 }
 

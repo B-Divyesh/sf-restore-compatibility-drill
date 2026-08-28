@@ -7,7 +7,7 @@ Restore Drill is for teams that rely on managed Postgres backups. It restores on
 The CLI is free and has no telemetry.
 
 - Live site: <https://restore-compatibility-drill.sociobot.in>
-- One-click browser demo: <https://restore-compatibility-drill.sociobot.in/demo>
+- One-click browser demo: <https://restore-compatibility-drill.sociobot.in/?demo=1>
 
 ## Safety boundary
 
@@ -16,16 +16,18 @@ Restore Drill does not accept a database connection string. It only starts a loc
 - no container network;
 - no published port;
 - a read-only backup mount; and
-- database storage on a 2 GB tmpfs mount.
+- database storage on a temporary memory disk (a 2 GB tmpfs mount).
 
-The CLI does not copy or upload the backup. Check your provider's terms before downloading a full backup. Use a sanitized backup when your policy requires it. Large backups may need more memory than the default tmpfs limit.
+The CLI does not copy or upload the backup. Check your provider's terms before downloading a full backup. Use a sanitized backup when your policy requires it. Large backups may need more than the temporary disk's 2 GB limit.
 
 ## Install
 
 You need Rust 1.85 or newer and Docker or Podman.
 
 ```sh
-cargo install --path .
+git clone https://github.com/B-Divyesh/sf-restore-compatibility-drill.git
+cd sf-restore-compatibility-drill
+cargo install --path . --locked
 ```
 
 The package starts at version `0.1.0` and builds one binary named `restore-drill`.
@@ -88,7 +90,7 @@ npm test
 npm run build
 ```
 
-`npm test` runs Rust unit tests, builds the site, runs every claim test, checks routes at 390 px, and scans every page with axe. `npm run build` creates the release binary and the static site in `dist/site/`.
+`npm test` runs unit tests and every claim test. It checks routes at 390 px and scans pages with axe. `npm run build` creates the release binary and the static site in `dist/site/`.
 
 Run the site locally:
 

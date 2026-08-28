@@ -2,9 +2,12 @@ import './style.css';
 import heroArt from './restore-press.webp?url';
 
 const PRODUCT = 'Restore Drill';
+const SITE_ORIGIN = 'https://restore-compatibility-drill.sociobot.in';
+const SOURCE_URL = 'https://github.com/B-Divyesh/sf-restore-compatibility-drill';
 type Route = 'home' | 'demo' | 'privacy' | 'terms' | 'not-found';
 
 const routeFromPath = (): Route => {
+  if (location.pathname === '/' && new URLSearchParams(location.search).get('demo') === '1') return 'demo';
   if (location.pathname === '/') return 'home';
   if (location.pathname === '/demo') return 'demo';
   if (location.pathname === '/privacy') return 'privacy';
@@ -21,7 +24,7 @@ const shell = (content: string, demo = false): string => `
   <header class="site-header">
     <a class="wordmark" href="/" data-link aria-label="Restore Drill home"><span aria-hidden="true" class="wordmark-mark">RD</span>${PRODUCT}</a>
     <nav aria-label="Main navigation">
-      <a href="/demo" data-link>Demo</a>
+      <a href="/?demo=1" data-link>Demo</a>
       <a href="/#install">Install</a>
       <a href="/privacy" data-link>Privacy</a>
     </nav>
@@ -44,7 +47,7 @@ const terminal = (interactive = false): string => `
           <p class="muted">Ready to restore the bundled sample backup.</p>
         </div>
       </div>
-      ${interactive ? '<button class="button stamp-button" id="run-demo">Run sample drill</button>' : '<a class="button stamp-button" href="/demo" data-link>Try it with sample data</a>'}
+      ${interactive ? '<button class="button stamp-button" id="run-demo">Run sample drill</button>' : '<a class="button stamp-button" href="/?demo=1" data-link>Try it with sample data</a>'}
     </div>
     <p class="caption">A browser replay of the bundled <code>restore-drill demo</code> run. Use the CLI for a real restore.</p>
   </section>`;
@@ -56,7 +59,7 @@ const homePage = (): string => shell(`
         <p class="eyebrow">A recovery check you can keep</p>
         <h1 tabindex="-1">Prove your Postgres backup restores</h1>
         <p class="lede">For teams that need a recovery answer before an outage, not during one.</p>
-        <div class="hero-action"><a class="button" href="/demo" data-link>Try it with sample data</a><span>See a complete drill without Docker.</span></div>
+        <div class="hero-action"><a class="button" href="/?demo=1" data-link>Try it with sample data</a><span>Open a browser replay of the sample drill.</span></div>
         <ul class="plain-facts" aria-label="Product facts">
           <li>Runs Postgres in a disposable local container.</li>
           <li>Keeps your backup on your machine.</li>
@@ -100,12 +103,15 @@ const homePage = (): string => shell(`
       <div>
         <p class="eyebrow">Local install</p>
         <h2 id="install-title">Run your first real drill</h2>
-        <p>Build the single Rust binary, then point it at a local backup file.</p>
+        <p>Clone the public source, build the single Rust binary, then point it at a local backup file.</p>
+        <p><a href="${SOURCE_URL}" rel="external">Get the source on GitHub <span aria-hidden="true">↗</span><span class="sr-only"> (external)</span></a></p>
       </div>
       <div class="command-block">
-        <button class="copy-button" data-copy="cargo install --path ." aria-label="Copy install command">Copy</button>
-        <pre><code>cargo install --path .</code></pre>
-        <button class="copy-button" data-copy="restore-drill run --dump backup.sql --postgres 15 --expect-extension pgcrypto --expect-table public.accounts" aria-label="Copy drill command">Copy</button>
+        <button class="copy-button" data-copy="git clone ${SOURCE_URL}.git&#10;cd sf-restore-compatibility-drill&#10;cargo install --path . --locked">Copy install command</button>
+        <pre><code>git clone ${SOURCE_URL}.git
+cd sf-restore-compatibility-drill
+cargo install --path . --locked</code></pre>
+        <button class="copy-button" data-copy="restore-drill run --dump backup.sql --postgres 15 --expect-extension pgcrypto --expect-table public.accounts">Copy drill command</button>
         <pre><code>restore-drill run \\
   --dump backup.sql \\
   --postgres 15 \\
@@ -159,28 +165,50 @@ const legalPage = (kind: 'privacy' | 'terms'): string => {
 
 const notFoundPage = (): string => shell(`<main id="main" class="not-found"><div class="misprint" aria-hidden="true">404</div><div><p class="eyebrow">This sheet missed the press</p><h1 tabindex="-1">This page was not restored</h1><p>The address does not match a page in this build.</p><a class="button" href="/" data-link>Return home</a></div></main>`);
 
-const titles: Record<Route, string> = {
-  home: 'Restore Drill — prove a Postgres backup restores',
-  demo: 'Demo — Restore Drill',
-  privacy: 'Privacy — Restore Drill',
-  terms: 'Terms — Restore Drill',
-  'not-found': 'Page not found — Restore Drill',
+const metadata: Record<Route, { title: string; description: string }> = {
+  home: {
+    title: 'Restore Drill — prove a Postgres backup restores',
+    description: 'Restore a Postgres backup in an isolated container, check compatibility, and write a signed receipt before an outage.',
+  },
+  demo: {
+    title: 'Demo — Restore Drill',
+    description: 'Replay the bundled Postgres restore drill with isolated sample data that is never saved.',
+  },
+  privacy: {
+    title: 'Privacy — Restore Drill',
+    description: 'Learn how Restore Drill keeps backups local and how the browser replay handles sample data.',
+  },
+  terms: {
+    title: 'Terms — Restore Drill',
+    description: 'Read the terms for using the Restore Drill command-line tool and browser replay.',
+  },
+  'not-found': {
+    title: 'Page not found — Restore Drill',
+    description: 'This address does not match a page in Restore Drill.',
+  },
 };
 
 function render(focus = true): void {
   const route = routeFromPath();
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) return;
-  document.title = titles[route];
-  const canonical = `https://restore-compatibility-drill.sociobot.in${location.pathname}`;
+  const pageMetadata = metadata[route];
+  document.title = pageMetadata.title;
+  const canonicalPath = route === 'demo' && location.search === '?demo=1' ? '/?demo=1' : location.pathname;
+  const canonical = `${SITE_ORIGIN}${canonicalPath}`;
   document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', canonical);
+  document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', pageMetadata.description);
+  document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', pageMetadata.title);
+  document.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.setAttribute('content', pageMetadata.description);
   document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.setAttribute('content', canonical);
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.setAttribute('content', pageMetadata.title);
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.setAttribute('content', pageMetadata.description);
   app.innerHTML = route === 'home' ? homePage() : route === 'demo' ? demoPage() : route === 'privacy' ? legalPage('privacy') : route === 'terms' ? legalPage('terms') : notFoundPage();
   document.querySelector('main')?.setAttribute('tabindex', '-1');
   bindNavigation();
   bindCommon();
   if (route === 'demo') bindDemo();
-  document.querySelector('#route-announcer')!.textContent = titles[route];
+  document.querySelector('#route-announcer')!.textContent = pageMetadata.title;
   if (focus) document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
@@ -219,13 +247,16 @@ const demoFrames = [
 function bindDemo(): void {
   const run = document.querySelector<HTMLButtonElement>('#run-demo');
   const output = document.querySelector<HTMLDivElement>('#terminal-output');
+  let timers: number[] = [];
   const play = () => {
     if (!run || !output) return;
+    timers.forEach(timer => window.clearTimeout(timer));
+    timers = [];
     run.disabled = true;
     run.textContent = 'Running sample…';
     output.innerHTML = '<p class="muted">Isolation: network none · no published port · tmpfs data</p>';
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    demoFrames.forEach((frame, index) => window.setTimeout(() => {
+    demoFrames.forEach((frame, index) => timers.push(window.setTimeout(() => {
       const row = document.createElement('p');
       row.className = `result-line ${frame[0].toLowerCase()}`;
       row.innerHTML = `<strong>${escapeHtml(frame[0])}</strong> ${escapeHtml(frame[1])}`;
@@ -234,10 +265,12 @@ function bindDemo(): void {
         run.disabled = false;
         run.textContent = 'Run sample again';
       }
-    }, reduced ? 0 : 180 * (index + 1)));
+    }, reduced ? 0 : 180 * (index + 1))));
   };
   run?.addEventListener('click', play);
   document.querySelector('[data-reset-demo]')?.addEventListener('click', () => {
+    timers.forEach(timer => window.clearTimeout(timer));
+    timers = [];
     if (output) output.innerHTML = '<p class="muted">Ready to restore the bundled sample backup.</p>';
     if (run) { run.disabled = false; run.textContent = 'Run sample drill'; }
   });

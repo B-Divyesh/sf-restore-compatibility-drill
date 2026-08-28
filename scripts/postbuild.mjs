@@ -1,4 +1,4 @@
-import { readdir, writeFile } from 'node:fs/promises';
+import { copyFile, readdir, writeFile } from 'node:fs/promises';
 
 const root = new URL('../dist/site/', import.meta.url);
 const assets = await readdir(new URL('assets/', root));
@@ -18,3 +18,4 @@ self.addEventListener('fetch', event => {
   }).catch(() => event.request.mode === 'navigate' ? caches.match('/index.html') : undefined)));
 });\n`;
 await writeFile(new URL('sw.js', root), source);
+await copyFile(new URL('index.html', root), new URL('404.html', root));

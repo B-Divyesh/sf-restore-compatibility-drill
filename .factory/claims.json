@@ -8,10 +8,24 @@
   },
   {
     "id": "browser-privacy",
-    "claim": "The browser demo sends no sample data off-site.",
+    "claim": "The site and browser demo make only same-origin requests and load no analytics, advertising scripts, or third-party fonts.",
     "where": "demo and privacy page",
     "test": "npm test -- --grep @claim:browser-privacy",
-    "sandbox": "fresh Chromium context; record every request during the full demo flow"
+    "sandbox": "fresh Chromium context; record every request and resource type during the full demo flow"
+  },
+  {
+    "id": "demo-no-persistence",
+    "claim": "The browser replay does not save sample data and Reset or reload returns it to its first frame.",
+    "where": "demo banner, demo introduction, and privacy page",
+    "test": "npm test -- --grep @claim:demo-no-persistence",
+    "sandbox": "fresh Chromium context; run, reset, and reload; inspect localStorage, sessionStorage, IndexedDB, and OPFS"
+  },
+  {
+    "id": "install-from-site",
+    "claim": "The public install instructions produce a working restore-drill command from a fresh directory.",
+    "where": "landing install section and README",
+    "test": "npm test -- --grep @claim:install-from-site",
+    "sandbox": "fresh temporary directory; clone the source, install with the published command, and run restore-drill --help"
   },
   {
     "id": "free-cli",

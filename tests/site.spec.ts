@@ -1,22 +1,82 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+const repo = resolve(import.meta.dirname, '..');
+const publicRepo = 'https://github.com/B-Divyesh/sf-restore-compatibility-drill.git';
 
 test('@claim:sample-demo runs the bundled sample to a signed pass result', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Try it with sample data' }).first().click();
-  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page).toHaveURL(/\?demo=1$/);
+  await expect(page.getByLabel('Demo mode')).toContainText('Demo — sample data, nothing is saved');
   await page.getByRole('button', { name: 'Run sample drill' }).click();
   await expect(page.getByText('PASS in 4.7s')).toBeVisible();
   await expect(page.getByText('Receipt written with HMAC-SHA256.')).toBeVisible();
 });
 
 test('@claim:browser-privacy demo sends no sample data off-site', async ({ page }) => {
-  const origins = new Set<string>();
-  page.on('request', request => origins.add(new URL(request.url()).origin));
-  await page.goto('/demo');
+  const requests: Array<{ origin: string; type: string }> = [];
+  page.on('request', request => requests.push({ origin: new URL(request.url()).origin, type: request.resourceType() }));
+  await page.goto('/?demo=1');
   await page.getByRole('button', { name: 'Run sample drill' }).click();
   await expect(page.getByText('PASS in 4.7s')).toBeVisible();
-  expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+  expect([...new Set(requests.map(request => request.origin))]).toEqual(['http://127.0.0.1:4173']);
+  expect(requests.filter(request => ['font', 'websocket', 'eventsource'].includes(request.type))).toEqual([]);
+  await expect(page.locator('script[src^="http"], link[rel="stylesheet"][href^="http"], link[rel="preload"][as="font"][href^="http"]')).toHaveCount(0);
+});
+
+test('@claim:demo-no-persistence reset and reload discard all browser replay state', async ({ page }) => {
+  await page.goto('/?demo=1');
+  await page.getByRole('button', { name: 'Run sample drill' }).click();
+  await expect(page.getByText('PASS in 4.7s')).toBeVisible();
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await expect(page.getByText('Ready to restore the bundled sample backup.')).toBeVisible();
+  await expect(page.getByText('PASS in 4.7s')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Run sample drill' }).click();
+  await page.waitForTimeout(220);
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await page.waitForTimeout(1_500);
+  await expect(page.getByText('Ready to restore the bundled sample backup.')).toBeVisible();
+  await expect(page.getByText('PASS in 4.7s')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText('Ready to restore the bundled sample backup.')).toBeVisible();
+  const storage = await page.evaluate(async () => {
+    const databases = indexedDB.databases ? await indexedDB.databases() : [];
+    const opfsEntries: string[] = [];
+    if (navigator.storage.getDirectory) {
+      const root = await navigator.storage.getDirectory();
+      for await (const name of (root as unknown as { keys: () => AsyncIterableIterator<string> }).keys()) opfsEntries.push(name);
+    }
+    return {
+      local: Object.keys(localStorage),
+      session: Object.keys(sessionStorage),
+      databases: databases.map(database => database.name),
+      opfsEntries,
+    };
+  });
+  expect(storage).toEqual({ local: [], session: [], databases: [], opfsEntries: [] });
+});
+
+test('@claim:install-from-site public instructions install a working command from a clean clone', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto('/');
+  const source = page.getByRole('link', { name: /Get the source on GitHub/ });
+  await expect(source).toHaveAttribute('href', publicRepo.replace(/\.git$/, ''));
+  await expect(page.locator('.command-block code').first()).toContainText(`git clone ${publicRepo}`);
+  await expect(page.locator('.command-block code').first()).toContainText('cargo install --path . --locked');
+
+  const temp = mkdtempSync(join(tmpdir(), 'restore-drill-install-'));
+  const checkout = join(temp, 'sf-restore-compatibility-drill');
+  const root = join(temp, 'installed');
+  execFileSync('git', ['clone', '--quiet', '--no-local', repo, checkout]);
+  execFileSync('cargo', ['install', '--path', '.', '--locked', '--root', root], { cwd: checkout, stdio: 'pipe' });
+  const help = spawnSync(join(root, 'bin', 'restore-drill'), ['--help'], { encoding: 'utf8' });
+  expect(help.status, help.stderr).toBe(0);
+  expect(help.stdout).toContain('Restore a backup in an isolated disposable Postgres container');
 });
 
 test('@claim:free-cli @regression:unavailable-checkout does not advertise an unavailable purchase', async ({ page }) => {
@@ -28,7 +88,7 @@ test('@claim:free-cli @regression:unavailable-checkout does not advertise an una
   expect(requests.some(url => url.includes('api.sociobot.in'))).toBe(false);
 });
 
-for (const route of ['/', '/demo', '/privacy', '/terms', '/missing-page']) {
+for (const route of ['/', '/?demo=1', '/demo', '/privacy', '/terms', '/missing-page']) {
   test(`accessibility smoke test ${route}`, async ({ page }) => {
     await page.goto(route);
     await expect(page.locator('main')).toHaveCount(1);
@@ -46,6 +106,49 @@ test('routes work with history and restore heading focus', async ({ page }) => {
   await page.goBack();
   await expect(page).toHaveTitle('Restore Drill — prove a Postgres backup restores');
   await expect(page.locator('h1')).toBeFocused();
+});
+
+test('every route sets its title, metadata, canonical URL, heading, and legal links', async ({ page }) => {
+  const routes = [
+    ['/', 'Restore Drill — prove a Postgres backup restores', 'Prove your Postgres backup restores'],
+    ['/?demo=1', 'Demo — Restore Drill', 'Run a sample restore drill'],
+    ['/demo', 'Demo — Restore Drill', 'Run a sample restore drill'],
+    ['/privacy', 'Privacy — Restore Drill', 'Privacy at Restore Drill'],
+    ['/terms', 'Terms — Restore Drill', 'Terms for Restore Drill'],
+    ['/missing-page', 'Page not found — Restore Drill', 'This page was not restored'],
+  ] as const;
+  for (const [route, title, heading] of routes) {
+    await page.goto(route);
+    await expect(page).toHaveTitle(title);
+    await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
+    const description = await page.locator('meta[name="description"]').getAttribute('content');
+    expect(description?.length).toBeGreaterThan(20);
+    expect(description?.length).toBeLessThanOrEqual(155);
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', title);
+    await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', title);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /^https:\/\/restore-compatibility-drill\.sociobot\.in\//);
+    await expect(page.locator('footer a[href="/privacy"]')).toHaveCount(1);
+    await expect(page.locator('footer a[href="/terms"]')).toHaveCount(1);
+  }
+});
+
+test('static host configuration serves known routes and a designed HTTP 404', async ({ request }) => {
+  const response = await request.get('/staticwebapp.config.json');
+  const config = await response.json() as {
+    navigationFallback?: unknown;
+    routes: Array<{ route: string; rewrite?: string; statusCode?: number }>;
+    responseOverrides: Record<string, { rewrite: string; statusCode: number }>;
+  };
+  expect(config.navigationFallback).toBeUndefined();
+  expect(config.routes).toEqual(expect.arrayContaining([
+    expect.objectContaining({ route: '/demo', rewrite: '/index.html' }),
+    expect.objectContaining({ route: '/privacy', rewrite: '/index.html' }),
+    expect.objectContaining({ route: '/terms', rewrite: '/index.html' }),
+  ]));
+  expect(config.routes.every(route => !(route.rewrite && route.statusCode))).toBe(true);
+  expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html', statusCode: 404 });
+  const page404 = await request.get('/404.html');
+  expect(page404.ok()).toBe(true);
 });
 
 test('keyboard skip link moves focus to the main landmark', async ({ page }) => {
@@ -86,8 +189,13 @@ test('@regression:immutable-static-assets fingerprints the hero and configures i
 
 test('390px layout has no horizontal page overflow', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/missing-page']) {
+    await page.goto(route);
+    const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
+    expect(width.scroll, route).toBeLessThanOrEqual(width.client);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  }
   await page.goto('/');
-  const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
-  expect(width.scroll).toBeLessThanOrEqual(width.client);
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Try it with sample data' }).first()).toBeVisible();
+  await expect(page.getByText('Open a browser replay of the sample drill.')).toBeVisible();
 });
