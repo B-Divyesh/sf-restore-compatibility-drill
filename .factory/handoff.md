@@ -35,6 +35,15 @@ The deploy root is `dist/site/`. The local browser demo is `/demo`; the real CLI
 - Local production preview: factory `verify-url.sh` returned HTTP 200 in 573 ms, no browser errors, one `h1`, a `main` landmark, `lang=en`, no missing image alt text, and no unlabeled buttons.
 - `git diff --check` passed.
 
+## Deployment
+
+- Committed and pushed repair: `19c586c4aac731202aafae3554a8634ca45e6fa9`.
+- Deployed `dist/site/` with the configured static deployment to <https://restore-compatibility-drill.sociobot.in> (SWA deployment `6cd4e63b-6a1f-4846-ab2e-93b80d1278c8`).
+- Live `verify-url.sh`: HTTP 200 in 747 ms; no console errors; correct title, `lang`, one `h1`, one `main`, image alt text, and button labels.
+- The live JS, CSS, and fingerprinted hero SHA-256 values match this build. Each returns `Cache-Control: public, max-age=31536000, immutable`.
+- Live 390 px demo completed to `PASS in 4.7s` with no horizontal overflow or console errors. A fresh keyboard check focused Skip to content, then `<main>`.
+- Live identity check: the unsupported billing endpoint remains HTTP 404, but no live HTML or JavaScript contains the checkout, Team Kit, price, or Sociobot billing API reference.
+
 ## Known limit
 
 This worker has no Docker or Podman executable. The existing integration tests exercise the real CLI through a controlled runtime shim and verify isolation flags, read-only mount, restore command selection, cleanup, receipts, and exit codes. Run `restore-drill demo --postgres 15` once on a Docker or Podman release host for the real container smoke test.
