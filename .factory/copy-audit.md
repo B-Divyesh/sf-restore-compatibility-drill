@@ -1,4 +1,4 @@
-# Copy audit — perfection loop 4
+# Copy audit — perfection loop 5
 
 Re-audited 28 August 2026. Counts treat hyphenated terms, commands, and version tokens as one word. No sentence exceeds 22 words or uses a banned plain-words term.
 
@@ -171,4 +171,4 @@ All route titles are 60 characters or fewer. All descriptions are 155 characters
 
 ## Catalog description
 
-“Prove a Postgres backup restores before an outage” — 8 words, 51 characters, starts with a verb.
+“Prove a Postgres backup restores before an outage” — 8 words, 49 characters, starts with a verb.
