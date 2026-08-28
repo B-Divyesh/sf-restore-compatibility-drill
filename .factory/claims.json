@@ -42,6 +42,13 @@
     "sandbox": "temporary directory and fake container runtime; assert real binary runtime arguments"
   },
   {
+    "id": "data-tmpfs-size",
+    "claim": "The CLI accepts a temporary database disk size from 512 MB to 64 GB and records the selected size.",
+    "where": "landing install section, CLI help, receipt, and README",
+    "test": "npm test -- --grep @claim:data-tmpfs-size",
+    "sandbox": "real binary and controlled runtime; assert an 8 GB selection reaches the runtime and receipt, then reject out-of-range values"
+  },
+  {
     "id": "backup-local",
     "claim": "The backup stays on the machine and is mounted read-only without being changed.",
     "where": "hero facts, boundaries, privacy, and README",
@@ -61,6 +68,34 @@
     "where": "receipt preview, how it works, and README",
     "test": "npm test -- --grep @claim:signed-receipt",
     "sandbox": "temporary directory; create, verify, change, and reject a signed receipt"
+  },
+  {
+    "id": "default-signing-key",
+    "claim": "The default signing key is created beside the receipt with mode 0600 on Unix.",
+    "where": "README receipt signing section",
+    "test": "npm test -- --grep @claim:default-signing-key",
+    "sandbox": "temporary directory; omit the key option, inspect the adjacent key permissions, and verify the receipt"
+  },
+  {
+    "id": "schema-readiness",
+    "claim": "The CLI checks each required schema and records a distinct pass or failure.",
+    "where": "landing workflow, CLI help, demo, receipt, and README",
+    "test": "npm test -- --grep @claim:schema-readiness",
+    "sandbox": "real binary and controlled runtime; assert both present-schema and missing-schema receipts"
+  },
+  {
+    "id": "cli-demo",
+    "claim": "The CLI demo copies the bundled sample into a separate directory and completes a real drill there.",
+    "where": "browser replay caption, README, and demo documentation",
+    "test": "npm test -- --grep @claim:cli-demo",
+    "sandbox": "real binary and controlled runtime; assert copied sample, pass receipt, key, schema/role/table checks, and unchanged source"
+  },
+  {
+    "id": "podman-runtime",
+    "claim": "The CLI can run the isolated drill through Podman.",
+    "where": "CLI help and README",
+    "test": "npm test -- --grep @claim:podman-runtime",
+    "sandbox": "real binary with a controlled executable named podman; assert no network, no port, tmpfs, and read-only mount arguments"
   },
   {
     "id": "dump-formats",

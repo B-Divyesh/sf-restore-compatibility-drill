@@ -52,6 +52,10 @@ struct RunArgs {
     #[arg(long = "expect-role")]
     expected_roles: Vec<String>,
 
+    /// Schema that must exist after restore. Repeat for more.
+    #[arg(long = "expect-schema")]
+    expected_schemas: Vec<String>,
+
     /// Schema-qualified table that must exist. Repeat for more.
     #[arg(long = "expect-table")]
     expected_tables: Vec<String>,
@@ -68,6 +72,10 @@ struct RunArgs {
     #[arg(long, default_value = "docker")]
     runtime: String,
 
+    /// Size of the temporary database disk (512m to 64g).
+    #[arg(long, default_value = "2g")]
+    data_tmpfs_size: String,
+
     /// Maximum restore time before the disposable container is stopped.
     #[arg(long, default_value_t = 1200)]
     timeout_seconds: u64,
@@ -82,6 +90,10 @@ struct DemoArgs {
     /// Container runtime command: docker or podman.
     #[arg(long, default_value = "docker")]
     runtime: String,
+
+    /// Size of the temporary database disk (512m to 64g).
+    #[arg(long, default_value = "2g")]
+    data_tmpfs_size: String,
 
     /// Put demo files in this directory instead of a new temp directory.
     #[arg(long)]
@@ -131,6 +143,8 @@ struct Receipt {
     source_version: Option<String>,
     backup_sha256: String,
     runtime: String,
+    #[serde(default = "default_data_tmpfs_size")]
+    data_tmpfs_size: String,
     isolation: String,
     checks: Vec<Check>,
     signature: Option<Signature>,
@@ -187,10 +201,12 @@ fn run_demo(args: DemoArgs, json: bool) -> Result<u8> {
             postgres: args.postgres,
             expected_extensions: vec!["plpgsql".into()],
             expected_roles: vec!["restore_reader".into()],
+            expected_schemas: vec!["restore_ready".into()],
             expected_tables: vec!["public.restore_probe".into()],
             receipt: dir.join("restore-drill-receipt.json"),
             signing_key: Some(dir.join("receipt-signing.key")),
             runtime: args.runtime,
+            data_tmpfs_size: args.data_tmpfs_size,
             timeout_seconds: 1200,
         },
         json,
@@ -214,13 +230,22 @@ fn run_drill(args: RunArgs, json: bool) -> Result<u8> {
     if !json {
         println!("RESTORE DRILL  {drill_id}");
         println!("Target         postgres:{}", args.postgres);
-        println!("Isolation      no network · no published port · tmpfs data");
+        println!(
+            "Isolation      no network · no published port · {} tmpfs data",
+            args.data_tmpfs_size
+        );
         println!("Backup hash    {}", &backup_hash[..12]);
     }
 
     let has_preflight_failure = checks.iter().any(|c| c.status == Status::Fail);
     if !has_preflight_failure {
-        match Container::start(&args.runtime, &container_name, &dump, &args.postgres) {
+        match Container::start(
+            &args.runtime,
+            &container_name,
+            &dump,
+            &args.postgres,
+            &args.data_tmpfs_size,
+        ) {
             Ok(container) => {
                 let ready = container.wait_ready(Duration::from_secs(45));
                 match ready {
@@ -262,6 +287,11 @@ fn run_drill(args: RunArgs, json: bool) -> Result<u8> {
                                 &args.expected_roles,
                             ),
                             (
+                                "schemas",
+                                "SELECT nspname FROM pg_namespace WHERE nspname NOT LIKE 'pg_%' AND nspname <> 'information_schema' ORDER BY 1",
+                                &args.expected_schemas,
+                            ),
+                            (
                                 "tables",
                                 "SELECT schemaname || '.' || tablename FROM pg_tables WHERE schemaname NOT IN ('pg_catalog','information_schema') ORDER BY 1",
                                 &args.expected_tables,
@@ -290,7 +320,7 @@ fn run_drill(args: RunArgs, json: bool) -> Result<u8> {
 
     let status = overall_status(&checks);
     let mut receipt = Receipt {
-        schema_version: 1,
+        schema_version: 2,
         drill_id,
         created_at_unix: created_at,
         duration_ms: started.elapsed().as_millis(),
@@ -299,7 +329,11 @@ fn run_drill(args: RunArgs, json: bool) -> Result<u8> {
         source_version: scan.source_version,
         backup_sha256: backup_hash,
         runtime: args.runtime,
-        isolation: "container network=none; no published ports; database data on tmpfs; backup mounted read-only".into(),
+        data_tmpfs_size: args.data_tmpfs_size.clone(),
+        isolation: format!(
+            "container network=none; no published ports; database data on {} tmpfs; backup mounted read-only",
+            args.data_tmpfs_size
+        ),
         checks,
         signature: None,
     };
@@ -327,10 +361,16 @@ fn validate_args(args: &RunArgs) -> Result<()> {
         bail!("--timeout-seconds must be between 1 and 86400");
     }
     validate_version(&args.postgres)?;
+    validate_tmpfs_size(&args.data_tmpfs_size)?;
     if args.runtime.contains('/') || args.runtime.contains('\\') || args.runtime.trim().is_empty() {
         bail!("--runtime must be a command name such as docker or podman");
     }
-    for value in args.expected_extensions.iter().chain(&args.expected_roles) {
+    for value in args
+        .expected_extensions
+        .iter()
+        .chain(&args.expected_roles)
+        .chain(&args.expected_schemas)
+    {
         validate_identifier(value)?;
     }
     for table in &args.expected_tables {
@@ -368,14 +408,44 @@ fn validate_identifier(value: &str) -> Result<()> {
     Ok(())
 }
 
+fn validate_tmpfs_size(value: &str) -> Result<()> {
+    let (number, multiplier) = match value.as_bytes().last().copied() {
+        Some(b'm') | Some(b'M') => (&value[..value.len() - 1], 1_u64),
+        Some(b'g') | Some(b'G') => (&value[..value.len() - 1], 1024_u64),
+        _ => bail!("--data-tmpfs-size must use m or g, for example 4096m or 4g"),
+    };
+    let amount: u64 = number
+        .parse()
+        .with_context(|| format!("invalid temporary database size {value:?}"))?;
+    let size_mib = amount
+        .checked_mul(multiplier)
+        .ok_or_else(|| anyhow!("temporary database size {value:?} is too large"))?;
+    if !(512..=65_536).contains(&size_mib) {
+        bail!("--data-tmpfs-size must be between 512m and 64g");
+    }
+    Ok(())
+}
+
+fn default_data_tmpfs_size() -> String {
+    "2g".into()
+}
+
 struct Container {
     runtime: String,
     name: String,
 }
 
 impl Container {
-    fn start(runtime: &str, name: &str, dump: &Path, version: &str) -> Result<Self> {
+    fn start(
+        runtime: &str,
+        name: &str,
+        dump: &Path,
+        version: &str,
+        data_tmpfs_size: &str,
+    ) -> Result<Self> {
         let mount = format!("{}:/drill/input:ro", dump.display());
+        let data_tmpfs =
+            format!("/var/lib/postgresql/data:rw,noexec,nosuid,size={data_tmpfs_size}");
         let output = Command::new(runtime)
             .args([
                 "run",
@@ -386,7 +456,7 @@ impl Container {
                 "--network",
                 "none",
                 "--tmpfs",
-                "/var/lib/postgresql/data:rw,noexec,nosuid,size=2g",
+                &data_tmpfs,
                 "--tmpfs",
                 "/var/run/postgresql:rw,nosuid,size=16m",
                 "-e",
@@ -941,6 +1011,7 @@ mod tests {
             source_version: Some("15".into()),
             backup_sha256: "abc".into(),
             runtime: "docker".into(),
+            data_tmpfs_size: "2g".into(),
             isolation: "network none".into(),
             checks: vec![pass("restore", "restored")],
             signature: None,
@@ -958,5 +1029,33 @@ mod tests {
         assert!(validate_version("latest").is_err());
         assert!(validate_identifier("app_user").is_ok());
         assert!(validate_identifier("app; DROP TABLE x").is_err());
+        assert!(validate_tmpfs_size("512m").is_ok());
+        assert!(validate_tmpfs_size("4g").is_ok());
+        assert!(validate_tmpfs_size("64g").is_ok());
+        assert!(validate_tmpfs_size("511m").is_err());
+        assert!(validate_tmpfs_size("65g").is_err());
+        assert!(validate_tmpfs_size("2gb").is_err());
+    }
+
+    #[test]
+    fn reads_receipts_from_before_the_tmpfs_field() {
+        let receipt: Receipt = serde_json::from_str(
+            r#"{
+                "schema_version": 1,
+                "drill_id": "rd-old",
+                "created_at_unix": 1,
+                "duration_ms": 2,
+                "status": "pass",
+                "postgres_target": "15",
+                "source_version": "15.8",
+                "backup_sha256": "abc",
+                "runtime": "docker",
+                "isolation": "network none",
+                "checks": [],
+                "signature": null
+            }"#,
+        )
+        .unwrap();
+        assert_eq!(receipt.data_tmpfs_size, "2g");
     }
 }

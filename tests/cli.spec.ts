@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const repo = resolve(import.meta.dirname, '..');
 
-function fakeRuntime(dir: string): { path: string; log: string } {
-  const bin = join(dir, 'fake-docker');
+function fakeRuntime(dir: string, name = 'fake-docker'): { path: string; log: string } {
+  const bin = join(dir, name);
   const log = join(dir, 'runtime.log');
   writeFileSync(bin, `#!/bin/sh
 printf '%s\\n' "$*" >> "$FAKE_RUNTIME_LOG"
@@ -20,6 +20,7 @@ case "$1" in
       *pg_available_extensions*) echo plpgsql; exit 0 ;;
       *"SELECT extname"*) echo plpgsql; exit 0 ;;
       *"SELECT rolname"*) echo restore_reader; exit 0 ;;
+      *"SELECT nspname"*) if [ "$FAKE_SCHEMAS" != "__EMPTY__" ]; then echo "\${FAKE_SCHEMAS:-restore_ready}"; fi; exit 0 ;;
       *"SELECT schemaname"*) echo public.restore_probe; exit 0 ;;
       *"--set ON_ERROR_STOP=on"*) cat >/dev/null; exit 0 ;;
       *pg_restore*) exit 0 ;;
@@ -47,7 +48,8 @@ test('@claim:isolated-container @claim:backup-local @claim:ci-mode runs the real
   const result = spawnSync(buildCli(), [
     '--json', 'run', '--dump', backup, '--postgres', '15',
     '--expect-extension', 'plpgsql', '--expect-role', 'restore_reader',
-    '--expect-table', 'public.restore_probe', '--runtime', 'fake-docker', '--receipt', receipt,
+    '--expect-schema', 'restore_ready', '--expect-table', 'public.restore_probe',
+    '--runtime', 'fake-docker', '--receipt', receipt,
   ], {
     cwd: repo,
     encoding: 'utf8',
@@ -61,6 +63,115 @@ test('@claim:isolated-container @claim:backup-local @claim:ci-mode runs the real
   expect(log).not.toContain('-p ');
   expect(readFileSync(backup)).toEqual(original);
   expect(JSON.parse(readFileSync(receipt, 'utf8')).status).toBe('pass');
+});
+
+test('@claim:schema-readiness reports present and missing required schemas', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'restore-drill-schema-'));
+  const fake = fakeRuntime(dir);
+  const commonArgs = [
+    '--json', 'run', '--dump', join(repo, 'examples/sample-backup.sql'), '--postgres', '15',
+    '--expect-schema', 'restore_ready', '--runtime', 'fake-docker',
+  ];
+  const environment = { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log };
+  const passResult = spawnSync(buildCli(), [...commonArgs, '--receipt', join(dir, 'pass.json')], {
+    cwd: repo, encoding: 'utf8', env: environment,
+  });
+  expect(passResult.status, passResult.stderr).toBe(0);
+  const passReceipt = JSON.parse(passResult.stdout);
+  expect(passReceipt.checks).toEqual(expect.arrayContaining([
+    expect.objectContaining({ id: 'schemas:restore_ready', status: 'pass' }),
+  ]));
+
+  const failResult = spawnSync(buildCli(), [...commonArgs, '--receipt', join(dir, 'fail.json')], {
+    cwd: repo, encoding: 'utf8', env: { ...environment, FAKE_SCHEMAS: '__EMPTY__' },
+  });
+  expect(failResult.status, failResult.stderr).toBe(2);
+  const failReceipt = JSON.parse(failResult.stdout);
+  expect(failReceipt.checks).toEqual(expect.arrayContaining([
+    expect.objectContaining({ id: 'schemas:restore_ready', status: 'fail', detail: expect.stringContaining('is missing') }),
+  ]));
+});
+
+test('@claim:data-tmpfs-size sends a bounded selected disk size to the runtime and receipt', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'restore-drill-tmpfs-'));
+  const fake = fakeRuntime(dir);
+  const receipt = join(dir, 'receipt.json');
+  const environment = { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log };
+  const result = spawnSync(buildCli(), [
+    '--json', 'run', '--dump', join(repo, 'examples/sample-backup.sql'), '--postgres', '15',
+    '--data-tmpfs-size', '8g', '--runtime', 'fake-docker', '--receipt', receipt,
+  ], { cwd: repo, encoding: 'utf8', env: environment });
+  expect(result.status, result.stderr).toBe(0);
+  expect(readFileSync(fake.log, 'utf8')).toContain('--tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=8g');
+  expect(JSON.parse(readFileSync(receipt, 'utf8')).data_tmpfs_size).toBe('8g');
+
+  for (const invalid of ['511m', '65g', '2gb']) {
+    const rejected = spawnSync(buildCli(), [
+      'run', '--dump', join(repo, 'examples/sample-backup.sql'), '--postgres', '15',
+      '--data-tmpfs-size', invalid,
+    ], { cwd: repo, encoding: 'utf8' });
+    expect(rejected.status, invalid).toBe(3);
+  }
+});
+
+test('@claim:cli-demo copies and runs the bundled sample in its isolated output directory', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'restore-drill-demo-'));
+  const outputDir = join(dir, 'demo-output');
+  const fake = fakeRuntime(dir);
+  const original = readFileSync(join(repo, 'examples/sample-backup.sql'));
+  const result = spawnSync(buildCli(), [
+    '--json', 'demo', '--postgres', '15', '--runtime', 'fake-docker', '--output-dir', outputDir,
+  ], {
+    cwd: repo, encoding: 'utf8',
+    env: { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log },
+  });
+  expect(result.status, result.stderr).toBe(0);
+  expect(readFileSync(join(outputDir, 'sample-backup.sql'))).toEqual(original);
+  expect(readFileSync(join(repo, 'examples/sample-backup.sql'))).toEqual(original);
+  expect(existsSync(join(outputDir, 'receipt-signing.key'))).toBe(true);
+  const receipt = JSON.parse(readFileSync(join(outputDir, 'restore-drill-receipt.json'), 'utf8'));
+  expect(receipt.status).toBe('pass');
+  expect(receipt.checks).toEqual(expect.arrayContaining([
+    expect.objectContaining({ id: 'schemas:restore_ready', status: 'pass' }),
+    expect.objectContaining({ id: 'roles:restore_reader', status: 'pass' }),
+    expect.objectContaining({ id: 'tables:public.restore_probe', status: 'pass' }),
+  ]));
+});
+
+test('@claim:default-signing-key creates the adjacent Unix key with private permissions', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'restore-drill-default-key-'));
+  const receipt = join(dir, 'weekly.json');
+  const key = join(dir, '.restore-drill-signing.key');
+  const result = spawnSync(buildCli(), [
+    'run', '--dump', join(repo, 'examples/incompatible-backup.sql'), '--postgres', '15', '--receipt', receipt,
+  ], { cwd: repo, encoding: 'utf8' });
+  expect(result.status, result.stderr).toBe(2);
+  expect(existsSync(key)).toBe(true);
+  if (process.platform !== 'win32') expect(statSync(key).mode & 0o777).toBe(0o600);
+  const verified = spawnSync(buildCli(), [
+    '--json', 'verify-receipt', '--receipt', receipt, '--signing-key', key,
+  ], { encoding: 'utf8' });
+  expect(verified.status, verified.stderr).toBe(0);
+  expect(JSON.parse(verified.stdout).valid).toBe(true);
+});
+
+test('@claim:podman-runtime selects Podman with the same isolation boundary', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'restore-drill-podman-'));
+  const fake = fakeRuntime(dir, 'podman');
+  const result = spawnSync(buildCli(), [
+    'run', '--dump', join(repo, 'examples/sample-backup.sql'), '--postgres', '15',
+    '--runtime', 'podman', '--receipt', join(dir, 'receipt.json'),
+  ], {
+    cwd: repo, encoding: 'utf8',
+    env: { ...process.env, PATH: `${dir}:${process.env.PATH}`, FAKE_RUNTIME_LOG: fake.log },
+  });
+  expect(result.status, result.stderr).toBe(0);
+  const log = readFileSync(fake.log, 'utf8');
+  expect(log).toContain('run -d --rm');
+  expect(log).toContain('--network none');
+  expect(log).toContain('--tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=2g');
+  expect(log).toContain(':/drill/input:ro');
+  expect(log).not.toContain('-p ');
 });
 
 test('@claim:newer-version catches a newer dump before a container starts', () => {

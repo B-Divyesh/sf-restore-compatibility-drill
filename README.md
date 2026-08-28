@@ -2,7 +2,7 @@
 
 Prove a Postgres backup restores before an outage.
 
-Restore Drill is for teams that rely on managed Postgres backups. It restores one backup into the exact disposable Postgres version you choose. It then checks extensions, roles, and critical tables before writing a signed JSON receipt.
+Restore Drill is for teams that rely on managed Postgres backups. It restores one backup into the exact disposable Postgres version you choose. It then checks schemas, extensions, roles, and critical tables before writing a signed JSON receipt.
 
 The CLI is free and has no telemetry.
 
@@ -16,9 +16,11 @@ Restore Drill does not accept a database connection string. It only starts a loc
 - no container network;
 - no published port;
 - a read-only backup mount; and
-- database storage on a temporary memory disk (a 2 GB tmpfs mount).
+- database storage on a temporary memory disk (a 2 GB tmpfs mount by default).
 
-The CLI does not copy or upload the backup. Check your provider's terms before downloading a full backup. Use a sanitized backup when your policy requires it. Large backups may need more than the temporary disk's 2 GB limit.
+The CLI does not copy or upload the backup. Check your provider's terms before downloading a full backup. Use a sanitized backup when your policy requires it.
+
+Set `--data-tmpfs-size 8g` when Postgres needs an 8 GB temporary disk. Accepted sizes range from `512m` to `64g`.
 
 ## Install
 
@@ -38,7 +40,7 @@ The package starts at version `0.1.0` and builds one binary named `restore-drill
 restore-drill demo --postgres 15
 ```
 
-The command writes the sample backup, receipt, and signing key to a new directory under `/tmp`. It prints that directory before starting the real container restore. The sample creates one role and one table.
+The command writes the sample backup, receipt, and signing key to a new directory under `/tmp`. It prints that directory before starting the real container restore. The sample creates one schema, one role, and one table.
 
 ## Run a real drill
 
@@ -46,6 +48,8 @@ The command writes the sample backup, receipt, and signing key to a new director
 restore-drill run \
   --dump ./backup.sql \
   --postgres 15.8 \
+  --data-tmpfs-size 8g \
+  --expect-schema app \
   --expect-extension pgcrypto \
   --expect-role app_reader \
   --expect-table public.accounts \

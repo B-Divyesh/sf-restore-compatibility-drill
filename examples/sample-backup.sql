@@ -5,6 +5,7 @@
 --
 
 CREATE ROLE restore_reader NOLOGIN;
+CREATE SCHEMA restore_ready;
 CREATE TABLE public.restore_probe (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     checked_at timestamp with time zone NOT NULL DEFAULT now(),

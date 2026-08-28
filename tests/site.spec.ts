@@ -15,6 +15,7 @@ test('@claim:sample-demo runs the bundled sample to a signed pass result', async
   await expect(page.getByLabel('Demo mode')).toContainText('Demo — sample data, nothing is saved');
   await page.getByRole('button', { name: 'Run sample drill' }).click();
   await expect(page.getByText('PASS in 4.7s')).toBeVisible();
+  await expect(page.getByText('Expected schema restore_ready exists.')).toBeVisible();
   await expect(page.getByText('Receipt written with HMAC-SHA256.')).toBeVisible();
 });
 

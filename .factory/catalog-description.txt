@@ -1,1 +1,1 @@
-Prove a Postgres backup restores before an outage
+Test a Postgres backup against its recovery target before an outage

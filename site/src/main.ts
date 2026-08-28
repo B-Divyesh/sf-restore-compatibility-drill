@@ -81,6 +81,7 @@ const homePage = (): string => shell(`
         <pre><code>{
   "status": "pass",
   "postgres_target": "15",
+  "data_tmpfs_size": "2g",
   "backup_sha256": "2ee6…9a1c",
   "signature": {
     "algorithm": "HMAC-SHA256"
@@ -93,7 +94,7 @@ const homePage = (): string => shell(`
       <p class="section-number">01—03</p>
       <h2 id="how-title">How the drill works</h2>
       <ol>
-        <li><strong>Name the target.</strong><span>Choose an exact Postgres version and expected extensions, roles, and tables.</span></li>
+        <li><strong>Name the target.</strong><span>Choose a Postgres version, temporary disk size, and expected schemas, extensions, roles, and tables.</span></li>
         <li><strong>Restore in isolation.</strong><span>The CLI mounts your backup read-only. The container has no network or published port.</span></li>
         <li><strong>Keep the result.</strong><span>Pass or fail, the CLI writes a signed JSON receipt with the next step.</span></li>
       </ol>
@@ -111,12 +112,14 @@ const homePage = (): string => shell(`
         <pre><code>git clone ${SOURCE_URL}.git
 cd sf-restore-compatibility-drill
 cargo install --path . --locked</code></pre>
-        <button class="copy-button" data-copy="restore-drill run --dump backup.sql --postgres 15 --expect-extension pgcrypto --expect-table public.accounts">Copy drill command</button>
+        <button class="copy-button" data-copy="restore-drill run --dump backup.sql --postgres 15 --expect-schema public --expect-extension pgcrypto --expect-table public.accounts">Copy drill command</button>
         <pre><code>restore-drill run \\
   --dump backup.sql \\
   --postgres 15 \\
+  --expect-schema public \\
   --expect-extension pgcrypto \\
   --expect-table public.accounts</code></pre>
+        <p>For a larger backup, set <code>--data-tmpfs-size 8g</code> to give Postgres an 8 GB temporary disk.</p>
       </div>
     </section>
 
@@ -138,7 +141,7 @@ const demoPage = (): string => shell(`
     ${terminal(true)}
     <section class="sample-sheet" aria-labelledby="sample-title">
       <div><p class="stamp blue">SAMPLE</p><h2 id="sample-title">What this sample checks</h2></div>
-      <dl><div><dt>Backup</dt><dd>Postgres 15.8 plain SQL</dd></div><div><dt>Target</dt><dd>Postgres 15</dd></div><div><dt>Extension</dt><dd>plpgsql</dd></div><div><dt>Role</dt><dd>restore_reader</dd></div><div><dt>Table</dt><dd>public.restore_probe</dd></div></dl>
+      <dl><div><dt>Backup</dt><dd>Postgres 15.8 plain SQL</dd></div><div><dt>Target</dt><dd>Postgres 15</dd></div><div><dt>Extension</dt><dd>plpgsql</dd></div><div><dt>Role</dt><dd>restore_reader</dd></div><div><dt>Schema</dt><dd>restore_ready</dd></div><div><dt>Table</dt><dd>public.restore_probe</dd></div></dl>
     </section>
   </main>`, true);
 
@@ -239,6 +242,7 @@ const demoFrames = [
   ['PASS', 'Expected extension plpgsql exists.'],
   ['PASS', 'The backup restored without a database error.'],
   ['PASS', 'Expected role restore_reader exists.'],
+  ['PASS', 'Expected schema restore_ready exists.'],
   ['PASS', 'Expected table public.restore_probe exists.'],
   ['SIGNED', 'Receipt written with HMAC-SHA256.'],
   ['RESULT', 'PASS in 4.7s'],
