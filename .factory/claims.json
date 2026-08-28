@@ -1,0 +1,79 @@
+[
+  {
+    "id": "sample-demo",
+    "claim": "The browser demo replays the bundled sample to a signed pass result.",
+    "where": "hero action and demo",
+    "test": "npm test -- --grep @claim:sample-demo",
+    "sandbox": "fresh Chromium context; open the demo and run the bundled sample"
+  },
+  {
+    "id": "browser-privacy",
+    "claim": "The browser demo sends no sample data off-site.",
+    "where": "demo and privacy page",
+    "test": "npm test -- --grep @claim:browser-privacy",
+    "sandbox": "fresh Chromium context; record every request during the full demo flow"
+  },
+  {
+    "id": "paid-kit",
+    "claim": "The Team Kit costs $49 once and the CLI stays free.",
+    "where": "hero facts and paid section",
+    "test": "npm test -- --grep @claim:paid-kit",
+    "sandbox": "fresh Chromium context; assert price, purchase type, free CLI copy, and checkout URL"
+  },
+  {
+    "id": "isolated-container",
+    "claim": "The CLI runs Postgres with no network or published port and tmpfs database storage.",
+    "where": "hero facts, how it works, and README",
+    "test": "npm test -- --grep @claim:isolated-container",
+    "sandbox": "temporary directory and fake container runtime; assert real binary runtime arguments"
+  },
+  {
+    "id": "backup-local",
+    "claim": "The backup stays on the machine and is mounted read-only without being changed.",
+    "where": "hero facts, boundaries, privacy, and README",
+    "test": "npm test -- --grep @claim:backup-local",
+    "sandbox": "temporary backup and fake container runtime; compare bytes and assert read-only mount"
+  },
+  {
+    "id": "newer-version",
+    "claim": "The CLI catches a newer source dump and an unsupported transaction_timeout setting before restore.",
+    "where": "README compatibility notes",
+    "test": "npm test -- --grep @claim:newer-version",
+    "sandbox": "bundled incompatible Postgres 17.6 sample targeting 15.8; unavailable runtime proves preflight stops first"
+  },
+  {
+    "id": "signed-receipt",
+    "claim": "Every started drill writes an HMAC-SHA256 signed JSON receipt, including a preflight failure.",
+    "where": "receipt preview, how it works, and README",
+    "test": "npm test -- --grep @claim:signed-receipt",
+    "sandbox": "temporary directory; create, verify, change, and reject a signed receipt"
+  },
+  {
+    "id": "dump-formats",
+    "claim": "The CLI restores plain SQL directly and sends pg_dump archives through pg_restore.",
+    "where": "CLI help and README",
+    "test": "npm test -- --grep @claim:dump-formats",
+    "sandbox": "temporary custom-format header and fake container runtime; assert the real binary invokes pg_restore"
+  },
+  {
+    "id": "ci-mode",
+    "claim": "The CLI completes without an interactive prompt and returns a documented exit code.",
+    "where": "README",
+    "test": "npm test -- --grep @claim:ci-mode",
+    "sandbox": "real binary with closed input and a fake container runtime"
+  },
+  {
+    "id": "no-production-url",
+    "claim": "The CLI cannot accept a production connection string and contains no network client.",
+    "where": "safety boundary and README",
+    "test": "npm test -- --grep @claim:no-production-url",
+    "sandbox": "real CLI help and parser plus dependency lockfile inspection"
+  },
+  {
+    "id": "no-telemetry",
+    "claim": "The CLI has no telemetry or HTTP client.",
+    "where": "README",
+    "test": "npm test -- --grep @claim:no-telemetry",
+    "sandbox": "dependency lockfile inspection plus real CLI option inspection"
+  }
+]

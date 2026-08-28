@@ -1,0 +1,11 @@
+# Demo
+
+- Browser URL: `https://restore-compatibility-drill.sociobot.in/demo` or `/demo` locally.
+- CLI command: `restore-drill demo --postgres 15`.
+- Sample data: `examples/sample-backup.sql` declares Postgres 15.8, creates `restore_reader`, and creates `public.restore_probe` with one row.
+- Browser reset: select **Reset demo**. The replay returns to its untouched first frame.
+- CLI reset: delete the printed `/tmp/restore-drill-demo-<timestamp>` directory when finished.
+- Browser storage namespace: none. Demo state lives in memory and disappears on reload.
+- Real license storage uses `sb_license:restore-compatibility-drill`; demo mode never reads or writes it.
+
+The browser is a replay and does not claim to run Postgres. The CLI demo performs the real container restore with the same bundled sample.
