@@ -1,5 +1,19 @@
 # Restore Drill v0.1.0 handoff
 
+## Independent verification addendum — **FAIL** (2026-08-28)
+
+Candidate `6b9e2e87ccc65d091f4ef195d20fba4e2f89283f` was independently tested against https://restore-compatibility-drill.sociobot.in from a clean checkout. Local claims, tests, typecheck, release build, package, clean-consumer CLI flow, live deployment match, accessibility, mobile, offline, privacy, rate limiting, and Lighthouse checks passed.
+
+**Release blocker:** the visible $49 Team Kit purchase link is unavailable. Fresh evidence:
+
+```text
+GET https://api.sociobot.in/api/v1/products/restore-compatibility-drill/checkout
+HTTP 404
+{"error":"enabled factory product","status":404}
+```
+
+The factory must register/enable the product in Sociobot billing, confirm this exact URL opens checkout, and have the verifier retest before release. The full evidence and secondary cache finding are in `.factory/verification.md`.
+
 ## What shipped
 
 - A single Rust binary, `restore-drill`, with `run`, `demo`, and `verify-receipt` commands.
