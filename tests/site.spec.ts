@@ -24,7 +24,7 @@ test('@claim:browser-privacy demo sends no sample data off-site', async ({ page 
   await page.goto('/?demo=1');
   await page.getByRole('button', { name: 'Run sample drill' }).click();
   await expect(page.getByText('PASS in 4.7s')).toBeVisible();
-  expect([...new Set(requests.map(request => request.origin))]).toEqual(['http://127.0.0.1:4173']);
+  expect([...new Set(requests.map(request => request.origin))]).toEqual([new URL(page.url()).origin]);
   expect(requests.filter(request => ['font', 'websocket', 'eventsource'].includes(request.type))).toEqual([]);
   await expect(page.locator('script[src^="http"], link[rel="stylesheet"][href^="http"], link[rel="preload"][as="font"][href^="http"]')).toHaveCount(0);
 });
@@ -169,7 +169,7 @@ test('service worker keeps the demo available offline and includes the update li
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Run a sample restore drill' })).toBeVisible();
   await context.setOffline(false);
-  const worker = await page.request.get('http://127.0.0.1:4173/sw.js');
+  const worker = await page.request.get(new URL('/sw.js', page.url()).href);
   const source = await worker.text();
   expect(source).toContain('self.skipWaiting()');
   expect(source).toContain('self.clients.claim()');
@@ -179,7 +179,7 @@ test('service worker keeps the demo available offline and includes the update li
 test('@regression:immutable-static-assets fingerprints the hero and configures immutable asset caching', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('.hero-art img')).toHaveAttribute('src', /\/assets\/restore-press-[A-Za-z0-9_-]+\.webp$/);
-  const response = await page.request.get('http://127.0.0.1:4173/staticwebapp.config.json');
+  const response = await page.request.get(new URL('/staticwebapp.config.json', page.url()).href);
   const config = await response.json() as { routes: Array<{ route: string; headers?: Record<string, string> }> };
   expect(config.routes).toContainEqual({
     route: '/assets/*',

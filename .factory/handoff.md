@@ -1,24 +1,60 @@
-# Review 1 handoff — Restore Drill
+# Perfection loop 1 handoff — Restore Drill
 
 ## Outcome
 
-Adversarial first-read review completed on 2026-08-28 and committed as `.factory/review-1.md`.
+All findings in `.factory/review-1.md` are resolved. The repaired CLI site is deployed at <https://restore-compatibility-drill.sociobot.in>. The public one-click sandbox is <https://restore-compatibility-drill.sociobot.in/?demo=1>.
 
-**Verdict: FAIL.** The live browser demo, claim suite, routing, privacy observation, mobile layout, and prior repair checks passed. The release remains blocked by `F-1-1`: the live site offers only `cargo install --path .`, which fails from a fresh directory and is not preceded by a clone, source link, release download, or package installation route.
+Implementation commit `812698f85680a923e1f2035ca0fbf3553d57014e` added the real install path, demo isolation tests, route metadata, HTTP 404 behavior, copy fixes, and mobile refinements. The final follow-up commit contains the live-aware verifier and this evidence.
 
-Additional findings are `F-1-2` through `F-1-6`: two unlisted demo claims, one README sentence over the 22-word limit, unexplained `tmpfs`, and ambiguous visible Copy buttons.
+## What changed
 
-## Verification performed
+- Added a visible GitHub source link and complete clone/install commands to the site and README.
+- Added `@claim:install-from-site`. It clones into a fresh directory, installs with Cargo, and runs `restore-drill --help`.
+- Changed the main sample link to `/?demo=1`. `/demo` remains a supported alias.
+- Kept demo state in memory only. Reset now cancels an active replay as well as clearing a completed replay.
+- Added `@claim:demo-no-persistence`, covering Reset, reload, localStorage, sessionStorage, IndexedDB, and OPFS.
+- Expanded `browser-privacy` to reject third-party requests, fonts, analytics, advertising scripts, WebSockets, and event streams.
+- Replaced the unlisted “without Docker” sentence with “Open a browser replay of the sample drill.”
+- Split the long README test sentence, explained `tmpfs`, and made both copy buttons name their command.
+- Added route-specific titles, descriptions, Open Graph/Twitter titles, canonicals, heading checks, focus restoration, and legal-link checks.
+- Removed the catch-all 200 rewrite. Known routes rewrite explicitly; unknown routes use the designed `404.html` and return HTTP 404.
+- Preserved the risograph tactile-collage identity. Mobile command controls now stack above wrapped commands, and navigation/legal/demo controls meet 44 px targets.
+- Added `.factory/catalog-description.txt`, refreshed `.factory/copy-audit.md`, and documented the demo contract.
 
-- Cold live browser checks at 390×844 and 1440×900, before scrolling.
-- One-click `/demo` replay, completion, Reset, Start-for-real control, fresh-context storage inspection, same-origin network interception, and offline reload after service-worker installation.
-- Every exact command listed in `.factory/claims.json`, independently from a fresh clone: all 11 passed.
-- Clean-clone `npm test`: 4 Rust tests and 18 Playwright tests passed.
-- Clean-clone `npm run build`: completed and produced the release binary and `dist/site/`.
-- CLI demo command in a temporary directory. It printed its output directory and returned the expected actionable Docker/Podman-unavailable error in this worker.
-- Route/title/metadata/link crawl, history review, source inspection, and the fresh-directory reproduction of the published install-command failure.
+## Exact verification evidence
 
-## How to verify after repair
+### Clean clone and claims
+
+Clean checkout: `/tmp/restore-drill-clean-polish-1.LLr3PN/repo` at `812698f85680a923e1f2035ca0fbf3553d57014e`.
+
+- `npm ci`: pass, 0 vulnerabilities.
+- Every one of the 13 commands in `.factory/claims.json`: pass independently.
+- `npm test`: pass — 4 Rust tests and 23 Playwright tests.
+- `npm run build`: pass — release binary and `dist/site/` produced.
+- `cargo fmt --check`: pass.
+- `cargo package --allow-dirty --no-verify`: pass — 47.7 KiB unpacked, 14.5 KiB compressed.
+- `npm audit --audit-level=high`: pass, 0 vulnerabilities.
+- Public GitHub acquisition: a fresh remote clone at `/tmp/restore-drill-public-install-polish-1.t3XSBt` installed successfully. The installed `restore-drill --help` exposed `run`, `demo`, and `verify-receipt`.
+
+The worker has no Docker or Podman daemon. The integration suite therefore uses the controlled runtime shim to exercise the real binary, isolation flags, read-only mount, restore selection, receipt, and exit-code paths.
+
+### Live browser, accessibility, privacy, and offline
+
+- Factory deploy ID: `17929615-13bc-4da3-8de2-21ae9ad6cb7d`.
+- Worker verifier: pass on `/`, `/?demo=1`, `/privacy`, and `/terms`; zero console/page errors, `lang=en`, one `h1`, one `main`, no missing alt text, no unlabeled buttons.
+- Live Playwright: 15/15 production browser tests passed. This includes every browser claim, axe scans on six routes, keyboard/focus behavior, route metadata, 390 px layout, and offline service-worker reload.
+- Live HTTP: `/`, `/?demo=1`, `/privacy`, and `/terms` return 200. `/missing-polish-final` returns 404 with the designed Restore Drill page.
+- Demo privacy: the full run stayed same-origin. Reset/reload left localStorage, sessionStorage, IndexedDB, and OPFS empty.
+- Screenshot evidence: `.factory/evidence/live-home-final/screenshot-mobile.png` and `.factory/evidence/live-demo-final/screenshot-mobile.png`.
+
+### Performance and deployed-artifact match
+
+- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.9 s, CLS 0, TBT 30 ms. JSON: `/tmp/restore-drill-lighthouse-polish-1.json`.
+- Production assets: JS 13,368 bytes (4.86 KB gzip), CSS 10,944 bytes (3.25 KB gzip), hero WebP 196,916 bytes. No downloaded fonts.
+- `index.html`, CSS, and JS on the live origin match `dist/site/` byte-for-byte. SHA-256: index `172617132e95ff0abbb33856c2fa03d98c2f28180b96b2ee7122ecc829a0a0cc`; CSS `276bfa98a60ee76ed6f74dec824934e37fb4f629541a2711d8def2d615bb72db`; JS `0da5a01af3f6798f2b73ab2af28e2eeef57a7caa1dec3fd4c756467a50e83a18`.
+- Live fingerprinted CSS and JS return `Cache-Control: public, max-age=31536000, immutable`.
+
+## Run and verify
 
 ```sh
 npm ci
@@ -26,8 +62,12 @@ npm test
 npm run build
 ```
 
-For the release blocker, begin in a fresh temporary directory and follow exactly the acquisition/install instructions presented on the live site. Confirm `restore-drill --help` succeeds before treating the fix as complete. Then run all 11 claim commands from `.factory/claims.json` independently.
+Run browser tests against production:
 
-## Environment note
+```sh
+PLAYWRIGHT_BASE_URL=https://restore-compatibility-drill.sociobot.in npx playwright test tests/site.spec.ts
+```
 
-This review worker has no Docker or Podman executable. The actual CLI demo reached its documented graceful runtime failure; no product code was modified. Only this handoff and the review report were added/updated.
+## Known gaps and next steps
+
+No product or review findings remain open. Registry publishing remains a factory action; the repository is ready for `cargo package` and must not publish from the worker.

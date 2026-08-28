@@ -156,6 +156,7 @@ footer nav a { display: inline-flex; min-height: 44px; align-items: center; }
   .hero-action .button { width: 100%; }
   .hero-art figcaption { right: 0; bottom: -34px; font-size: .8rem; }
   .preview-section, .install { padding: 72px 16px; }
+  .copy-button { float: none; width: 100%; margin: 0; }
   .receipt-note { padding: 28px 20px; }
   .how, .boundaries { padding: 80px 16px; }
   .how li { grid-template-columns: 46px 1fr; gap: 12px; }
