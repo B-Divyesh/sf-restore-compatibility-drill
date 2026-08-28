@@ -41,7 +41,7 @@ cargo package
 - Every entry in `.factory/claims.json`: passed from a fresh browser context or temp directory.
 - `npm run typecheck`: passed.
 - `npm run build`: passed; release binary is 1008 KB and static output is 532 KB total.
-- `cargo package --allow-dirty`: passed. The package allowlist contains only the Rust source, examples, and project docs.
+- `cargo package`: passed from the committed tree. The package allowlist contains only the Rust source, examples, and project docs.
 - `npm audit --audit-level=high`: zero vulnerabilities.
 - `git diff --check`: passed.
 - Factory `verify-url.sh`: HTTP 200, 564 ms load, no console errors, one `h1`, one `main`, no missing alt text, and no unlabeled buttons.
