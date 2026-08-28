@@ -1,6 +1,6 @@
 # Landing page copy audit
 
-Audited 28 August 2026. Counts treat hyphenated terms and prices as one word. Interface labels and headings are listed after the sentences. No sentence exceeds 22 words. No copy uses a banned word from the plain-words contract.
+Audited 28 August 2026. Counts treat hyphenated terms as one word. No sentence exceeds 22 words or uses a banned plain-words term.
 
 ## First screen
 
@@ -11,7 +11,7 @@ Audited 28 August 2026. Counts treat hyphenated terms and prices as one word. In
 | See a complete drill without Docker. | 6 | Pass |
 | Runs Postgres in a disposable local container. | 7 | Pass |
 | Keeps your backup on your machine. | 6 | Pass |
-| $49 once for team runbooks; the CLI stays free. | 9 | Pass |
+| The CLI is free and writes signed JSON receipts. | 9 | Pass |
 
 The primary action is “Try it with sample data.” It opens `/demo` in one click.
 
@@ -30,7 +30,7 @@ The primary action is “Try it with sample data.” It opens `/demo` in one cli
 | The container has no network or published port. | 8 | Pass |
 | Pass or fail, the CLI writes a signed JSON receipt with the next step. | 14 | Pass |
 
-## Install, boundaries, and price
+## Install and boundaries
 
 | Copy | Words | Result |
 | --- | ---: | --- |
@@ -39,30 +39,12 @@ The primary action is “Try it with sample data.” It opens `/demo` in one cli
 | It does not upload or retain your backup. | 8 | Pass |
 | It does not replace provider recovery procedures. | 7 | Pass |
 | It does prove one backup against one declared target. | 9 | Pass |
-| The CLI stays free. | 4 | Pass |
-| The Team Kit adds a CI workflow, policy template, and incident runbook. | 12 | Pass |
-| Sociobot and Dodo are the merchant of record. | 8 | Pass |
-| Read the terms and privacy notice. | 6 | Pass |
-| Team Kit active. | 3 | Pass |
-| Your weekly workflow and runbook are ready to copy. | 9 | Pass |
-
-## License feedback
-
-| Copy | Words | Result |
-| --- | ---: | --- |
-| Checking this license. | 3 | Pass |
-| License verified. | 2 | Pass |
-| The Team Kit is active. | 5 | Pass |
-| This license is not active. | 5 | Pass |
-| Check the token or buy a license. | 7 | Pass |
-| The license server could not be reached. | 7 | Pass |
-| Your last verified access is unchanged. | 6 | Pass |
 
 ## Headings and action labels
 
-Headings: “A recovery check you can keep,” “Sample restore drill,” “One receipt records the evidence,” “How the drill works,” “Run your first real drill,” “This is not another backup service,” and “Put the drill on a weekly schedule.”
+Headings: “A recovery check you can keep,” “Sample restore drill,” “One receipt records the evidence,” “How the drill works,” “Run your first real drill,” and “This is not another backup service.”
 
-Actions: “Try it with sample data,” “Copy,” “Buy the Team Kit,” “Have a license?”, “Verify license,” and “Open the Team Kit.” Each action names its result.
+Actions: “Try it with sample data” and “Copy.” Each action names its result.
 
 ## Terminology table
 
@@ -73,7 +55,6 @@ Actions: “Try it with sample data,” “Copy,” “Buy the Team Kit,” “H
 | The disposable database release | target |
 | The machine-readable result | receipt |
 | Browser example state | demo |
-| Paid workflow and runbook bundle | Team Kit |
 | Local secret used for HMAC | signing key |
 
 ## Catalog description

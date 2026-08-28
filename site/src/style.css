@@ -104,23 +104,6 @@ p { max-width: 68ch; }
 .boundaries li::before { content: "×"; position: absolute; left: 0; color: var(--red); font-weight: 900; }
 .boundaries li:last-child::before { content: "✓"; color: var(--pass); }
 
-.paid { padding: 96px max(24px, calc((100vw - 1000px) / 2)); display: grid; grid-template-columns: 240px 1fr; gap: 72px; background: var(--yellow); border-block: 2px solid var(--ink); }
-.paid .eyebrow { color: var(--ink); }
-.paid .legal-line a { color: var(--ink); }
-.price-mark { width: 220px; height: 220px; display: grid; place-content: center; text-align: center; border: 3px solid var(--ink); border-radius: 50%; background: var(--paper); box-shadow: 10px 10px 0 var(--red); transform: rotate(-4deg); }
-.price-mark span { font-family: var(--display); font-size: 4.5rem; line-height: 1; }
-.price-mark small { font-weight: 700; text-transform: uppercase; }
-.buy-button { margin: 20px 0; }
-.restore-license { max-width: 620px; margin-top: 20px; border-top: 2px solid var(--ink); padding-top: 16px; }
-.restore-license summary { min-height: 44px; cursor: pointer; font-weight: 700; }
-.restore-license label { display: block; margin-bottom: 8px; font-weight: 700; }
-.inline-form { display: flex; gap: 12px; }
-.inline-form input { min-width: 0; flex: 1; min-height: 44px; padding: 8px 12px; border: 2px solid var(--ink); background: var(--paper); }
-.inline-form button { padding: 8px 14px; border: 2px solid var(--ink); color: #fff; background: var(--blue); cursor: pointer; }
-.form-status { min-height: 25px; }
-.team-kit { margin-top: 24px; padding: 20px; border: 2px solid var(--ink); background: var(--paper); }
-.legal-line { font-size: .875rem; }
-
 .page-intro, .legal-page article { max-width: 900px; margin: 0 auto; padding: 80px 24px 56px; }
 .page-intro h1, .legal-page h1, .not-found h1 { font-size: clamp(2.5rem, 7vw, 5.5rem); }
 .demo-page > .terminal-wrap { max-width: 1000px; margin: 24px auto 96px; padding-inline: 24px; }
@@ -129,13 +112,6 @@ p { max-width: 68ch; }
 .sample-sheet dl div { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--ink); }
 .sample-sheet dt { font-weight: 700; }
 .sample-sheet dd { margin: 0; }
-.team-preview { max-width: 1000px; margin: -48px auto 96px; padding: 32px; border: 2px solid var(--ink); }
-.kit-page { padding-bottom: 96px; }
-.kit-sheet { max-width: 1100px; margin: 0 auto 48px; padding: 48px; display: grid; grid-template-columns: 4fr 7fr; gap: 56px; border: 2px solid var(--ink); background: var(--paper-deep); box-shadow: 10px 10px 0 var(--blue); }
-.kit-sheet:nth-child(odd) { box-shadow: 10px 10px 0 var(--red); }
-.kit-sheet h2 { font-size: clamp(1.8rem, 3.5vw, 3rem); }
-.checklist { margin: 0; padding-left: 28px; }
-.checklist li { padding: 10px 0; border-bottom: 1px solid var(--ink); }
 .demo-banner { min-height: 48px; padding: 8px max(24px, calc((100vw - 1192px) / 2)); display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #fff; background: var(--blue); }
 .demo-banner span { display: flex; gap: 18px; align-items: center; }
 .demo-banner a, .text-button { color: #fff; }
@@ -158,11 +134,9 @@ footer nav { display: flex; gap: 24px; }
   .site-header nav { gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
   .hero { min-height: 0; grid-template-columns: 1fr; padding-top: 48px; }
   .hero-art { max-width: 600px; }
-  .preview-section, .install, .boundaries, .paid, .sample-sheet, .kit-sheet { grid-template-columns: 1fr; }
+  .preview-section, .install, .boundaries, .sample-sheet { grid-template-columns: 1fr; }
   .how li { grid-template-columns: 56px 1fr; }
   .how li span { grid-column: 2; }
-  .price-mark { width: 170px; height: 170px; }
-  .price-mark span { font-size: 3.5rem; }
   .not-found { grid-template-columns: 1fr; }
   footer { grid-template-columns: 1fr; }
   footer nav { flex-wrap: wrap; }
@@ -180,17 +154,15 @@ footer nav { display: flex; gap: 24px; }
   .hero-action { align-items: stretch; flex-direction: column; }
   .hero-action .button { width: 100%; }
   .hero-art figcaption { right: 0; bottom: -34px; font-size: .8rem; }
-  .preview-section, .install, .paid { padding: 72px 16px; }
+  .preview-section, .install { padding: 72px 16px; }
   .receipt-note { padding: 28px 20px; }
   .how, .boundaries { padding: 80px 16px; }
   .how li { grid-template-columns: 46px 1fr; gap: 12px; }
   .terminal-screen { min-height: 350px; padding: 18px 14px; font-size: .8rem; }
   .demo-page > .terminal-wrap { padding-inline: 16px; }
   .sample-sheet { width: calc(100% - 32px); padding: 28px 20px; }
-  .kit-sheet { width: calc(100% - 32px); padding: 28px 20px; }
   .sample-sheet dl div { grid-template-columns: 1fr; gap: 0; }
   .demo-banner { align-items: flex-start; flex-direction: column; padding: 10px 16px; }
-  .inline-form { align-items: stretch; flex-direction: column; }
   footer { padding-inline: 16px; }
 }
 

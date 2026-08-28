@@ -3,8 +3,8 @@ import { readdir, writeFile } from 'node:fs/promises';
 const root = new URL('../dist/site/', import.meta.url);
 const assets = await readdir(new URL('assets/', root));
 const precache = [
-  '/', '/demo', '/team-kit', '/privacy', '/terms', '/index.html', '/favicon.svg',
-  '/restore-press.webp', '/og.webp', '/apple-touch-icon.png',
+  '/', '/demo', '/privacy', '/terms', '/index.html', '/favicon.svg',
+  '/og.webp', '/apple-touch-icon.png',
   ...assets.filter(name => !name.endsWith('.map')).map(name => `/assets/${name}`),
 ];
 const source = `const CACHE = 'restore-drill-v1';

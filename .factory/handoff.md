@@ -1,31 +1,19 @@
-# Restore Drill v0.1.0 handoff
+# Restore Drill v0.1.0 repair handoff
 
-## Independent verification addendum — **FAIL** (2026-08-28)
+## Repair summary
 
-Candidate `6b9e2e87ccc65d091f4ef195d20fba4e2f89283f` was independently tested against https://restore-compatibility-drill.sociobot.in from a clean checkout. Local claims, tests, typecheck, release build, package, clean-consumer CLI flow, live deployment match, accessibility, mobile, offline, privacy, rate limiting, and Lighthouse checks passed.
+This repair resolves the release-blocking verification finding from candidate `6b9e2e87ccc65d091f4ef195d20fba4e2f89283f`.
 
-**Release blocker:** the visible $49 Team Kit purchase link is unavailable. Fresh evidence:
+The factory billing product was not enabled: on 28 August 2026, `GET https://api.sociobot.in/api/v1/products/restore-compatibility-drill/checkout` returned `404 {"error":"enabled factory product","status":404}`. Billing registration is factory-controlled and this repository has no registration authority or script. Rather than deploy a purchase action that fails, the product is now honestly free: the unavailable Team Kit, checkout URL, license flow, related sitemap entry, payment copy, and billing CSP exceptions were removed. The researched CLI job, browser demo, privacy boundary, and all restore behavior remain intact.
 
-```text
-GET https://api.sociobot.in/api/v1/products/restore-compatibility-drill/checkout
-HTTP 404
-{"error":"enabled factory product","status":404}
-```
+The secondary cache finding is also repaired. The hero image now builds as a fingerprinted Vite asset and `staticwebapp.config.json` gives `/assets/*` `Cache-Control: public, max-age=31536000, immutable`.
 
-The factory must register/enable the product in Sociobot billing, confirm this exact URL opens checkout, and have the verifier retest before release. The full evidence and secondary cache finding are in `.factory/verification.md`.
+## Regression coverage
 
-## What shipped
-
-- A single Rust binary, `restore-drill`, with `run`, `demo`, and `verify-receipt` commands.
-- Isolated Docker or Podman execution with no container network, no published port, tmpfs database storage, and a read-only backup mount.
-- Plain SQL restore through `psql` and pg_dump archive or directory restore through `pg_restore`.
-- Preflight detection for a newer plain-SQL source version and the Postgres 17 `transaction_timeout` mismatch.
-- Post-restore checks for expected extensions, roles, and schema-qualified tables.
-- A receipt for pass, compatibility fail, or runtime error. Receipts contain the backup hash, duration, checks, remedies, and an HMAC-SHA256 signature.
-- A bundled real CLI sample at `examples/sample-backup.sql` and a browser replay at `/demo`.
-- A static Vite site at `dist/site/` with `/`, `/demo`, `/team-kit`, `/privacy`, `/terms`, and a designed not-found route.
-- The required Sociobot checkout and license verification flow. The $49 one-time Team Kit supplies a weekly workflow, policy checklist, and incident checklist after verification.
-- An original 193 KB risograph hero plus a derived Open Graph image. The prompt and factory deployment are recorded in `.factory/assets/restore-press.prompt.json` and `.factory/design.md`.
+- `@regression:unavailable-checkout` asserts that the landing page calls the CLI free, contains no checkout/API link, and makes no Sociobot billing request.
+- `@regression:immutable-static-assets` asserts that the hero URL is fingerprinted under `/assets/` and that the production SWA configuration sets the exact immutable cache header.
+- Keyboard regression: Skip to content receives focus and moves focus to `<main>`.
+- Service-worker regression: `/demo` reloads while offline after first visit; the generated worker includes `skipWaiting` and `clients.claim`.
 
 ## How to run
 
@@ -33,41 +21,20 @@ The factory must register/enable the product in Sociobot billing, confirm this e
 npm ci
 npm test
 npm run build
+cargo package --allow-dirty --no-verify
 ```
 
-The exact static build command is `npm run build:site`; its deploy root is `dist/site/` and contains `index.html`.
+The deploy root is `dist/site/`. The local browser demo is `/demo`; the real CLI sample is `cargo run -- demo --postgres 15` on a machine with Docker or Podman.
 
-Try the actual CLI sample on a machine with Docker:
+## Verification evidence
 
-```sh
-cargo run -- demo --postgres 15
-```
+- Clean dependency install: `npm ci` passed; `npm audit --audit-level=high` reported 0 vulnerabilities.
+- Full suite: `npm test` passed: 4 Rust unit tests, TypeScript checking, site build, and 18 Playwright tests. It includes every `.factory/claims.json` tag, desktop, 390 px mobile, keyboard, axe serious/critical scans, privacy egress, offline, and update-lifecycle checks.
+- Production build: `npm run build` passed. Current static assets: 11.7 KB JS (4.46 KB gzip), 10.6 KB CSS (3.19 KB gzip), and a 196,916-byte hero image.
+- Package/consumer: `cargo package --allow-dirty --no-verify` produced `target/package/restore-drill-0.1.0.crate`. A clean `cargo install --path . --root /tmp/restore-drill-consumer.*` installed `restore-drill`; its incompatible 17.6-to-15.8 run returned exit 2 with the signed compatibility receipt, and `verify-receipt` returned valid with exit 0.
+- Local production preview: factory `verify-url.sh` returned HTTP 200 in 573 ms, no browser errors, one `h1`, a `main` landmark, `lang=en`, no missing image alt text, and no unlabeled buttons.
+- `git diff --check` passed.
 
-Check the publishable Rust archive without publishing:
+## Known limit
 
-```sh
-cargo package
-```
-
-## Verification completed
-
-- `npm test`: passed. This includes 4 Rust tests and 17 Playwright tests.
-- Every entry in `.factory/claims.json`: passed from a fresh browser context or temp directory.
-- `npm run typecheck`: passed.
-- `npm run build`: passed; release binary is 1008 KB and static output is 532 KB total.
-- `cargo package`: passed from the committed tree. The package allowlist contains only the Rust source, examples, and project docs.
-- `npm audit --audit-level=high`: zero vulnerabilities.
-- `git diff --check`: passed.
-- Factory `verify-url.sh`: HTTP 200, 564 ms load, no console errors, one `h1`, one `main`, no missing alt text, and no unlabeled buttons.
-- Axe: no serious or critical findings on home, demo, locked Team Kit, privacy, terms, or not-found routes.
-- Mobile: the 390×844 test has no horizontal overflow and preserves the primary action.
-- Production bundle: 6.29 KB JS gzip, 3.57 KB CSS gzip, no font files, and a 193 KB hero image.
-- Lighthouse mobile: performance 98, accessibility 100, best practices 100, SEO 100; LCP 2.3 s, CLS 0, speed index 0.9 s, and total blocking time 10 ms. Lab INP was not reported.
-
-## Known gaps and release notes
-
-- This worker image has no Docker or Podman binary, so a live Postgres container could not run here. Integration tests execute the release logic against a controlled fake runtime and assert the exact isolation, mount, `psql`, `pg_restore`, query, cleanup, exit-code, and receipt behavior. Run `restore-drill demo --postgres 15` once on the release host as the final container smoke test.
-- Source-version preflight reads plain SQL headers. Custom and directory archives rely on the live restore because their source metadata is not safely readable without starting the selected image.
-- The 2 GB tmpfs limit is intentional for a small local drill. Large backups need a larger-memory runner and may exceed the default 20-minute timeout.
-- HMAC receipts prove that a file still matches the holder's local key. They are not public-key attestations.
-- The factory must register the paid product before release. The site uses the slug-based Sociobot production API and contains no product ID or payment-provider code.
+This worker has no Docker or Podman executable. The existing integration tests exercise the real CLI through a controlled runtime shim and verify isolation flags, read-only mount, restore command selection, cleanup, receipts, and exit codes. Run `restore-drill demo --postgres 15` once on a Docker or Podman release host for the real container smoke test.

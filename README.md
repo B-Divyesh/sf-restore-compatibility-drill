@@ -4,7 +4,7 @@ Prove a Postgres backup restores before an outage.
 
 Restore Drill is for teams that rely on managed Postgres backups. It restores one backup into the exact disposable Postgres version you choose. It then checks extensions, roles, and critical tables before writing a signed JSON receipt.
 
-The CLI is free and has no telemetry. The optional $49 Team Kit adds a weekly CI workflow, policy template, and incident runbook.
+The CLI is free and has no telemetry.
 
 - Live site: <https://restore-compatibility-drill.sociobot.in>
 - One-click browser demo: <https://restore-compatibility-drill.sociobot.in/demo>

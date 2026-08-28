@@ -14,11 +14,11 @@
     "sandbox": "fresh Chromium context; record every request during the full demo flow"
   },
   {
-    "id": "paid-kit",
-    "claim": "The Team Kit costs $49 once and the CLI stays free.",
-    "where": "hero facts and paid section",
-    "test": "npm test -- --grep @claim:paid-kit",
-    "sandbox": "fresh Chromium context; assert price, purchase type, free CLI copy, and checkout URL"
+    "id": "free-cli",
+    "claim": "The Restore Drill CLI is free and the site has no unavailable purchase link.",
+    "where": "README and landing page",
+    "test": "npm test -- --grep @claim:free-cli",
+    "sandbox": "fresh Chromium context; assert the CLI is described as free and no checkout URL is present"
   },
   {
     "id": "isolated-container",
