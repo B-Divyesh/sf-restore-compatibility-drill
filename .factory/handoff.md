@@ -1,53 +1,52 @@
-# Restore Drill — polish 5 handoff
+# Restore Drill — review 6 handoff
 
 ## Outcome
 
-The review-5 repair is complete and deployed. The one remaining claim-contract
-gap is closed: the public-install claim now uses the public GitHub repository,
-checks out the exact public `main` SHA it resolved, runs the published locked
-install command, and starts the installed binary. No finding remains open.
+Adversarial review 6 is complete with a **FAIL** verdict. Product code was not
+modified. The full report is in [review-6.md](review-6.md).
 
-## What changed
+## What was done
 
-- Replaced the local checkout used by `@claim:install-from-site` with the
-  linked public GitHub checkout, detached at the SHA returned by `git ls-remote`.
-- Kept the existing visible GitHub link and exact clone/install instructions in
-  sync with the test.
-- Updated the claim sandbox description, round-5 copy audit, and verb-first
-  catalog description.
-- Added the complete cumulative closure record in [polish-5.md](polish-5.md).
+- Cold-opened the live home page in fresh 390×844 and 1440×900 contexts.
+- Exercised the one-click replay, Reset, reload, storage isolation, request
+  boundary, offline reload, and clipboard failure state.
+- Ran the CLI demo from a fresh temporary directory and compared the bundled
+  sample hash before and after.
+- Ran all 19 exact claim commands independently from a clean clone.
+- Ran the complete 32-test suite against production and built both artifacts.
+- Crawled every rendered link and checked metadata, routes, 404 behavior,
+  history focus, accessibility coverage, cache policy, and visual identity.
+- Rechecked every finding from reviews 1–5 and both earlier verification
+  reports in the live product and current source.
+- Audited every landing-page and README sentence, heading, and action label.
 
-## Exact verification
+## Verification
 
-- Repair commit: `c627fc57d8c7ab1f6ab561901516940693b55133`.
-- Public `main` resolved to that same SHA after push.
-- Fresh public clone: `/tmp/restore-drill-polish5-clean.UgMCAu/repo`.
-- All 19 exact `.factory/claims.json` commands passed independently; see
-  [polish-5-clean-claims.txt](evidence/polish-5-clean-claims.txt).
-- Clean clone: `npm test` passed 5 Rust tests and 32 Playwright tests.
-- Clean clone: `npm run build`, `cargo fmt --check`,
-  `cargo clippy --all-targets -- -D warnings`, `cargo package --no-verify`,
-  `npm audit --omit=dev --audit-level=high`, and `git diff --check` passed.
-- Deployment: `5efd42a0-7885-4bc6-8dbc-8a9b1fac6544` through the static work-order
-  configuration.
-- Production: `PLAYWRIGHT_BASE_URL=https://restore-compatibility-drill.sociobot.in npm test`
-  passed all 32 tests; output is in
-  [production-suite.log](evidence/polish-5-live/production-suite.log).
-- The worker verifier cold-opened home and demo with zero console errors,
-  route-specific titles, `lang="en"`, one h1, one main landmark, labelled
-  controls, and complete image alt text. Reports and screenshots are in
-  [polish-5-live](evidence/polish-5-live/).
-- Cold live route checks: `/`, `/?demo=1`, `/demo`, `/privacy`, and `/terms`
-  returned 200; `/missing-page` returned the designed 404.
-- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100,
-  SEO 100; LCP 1.893 s, CLS 0, TBT 33 ms.
+- Clean clone: `/tmp/restore-review6-claims.WbYCPz/repo` at `9c03cc6`.
+- All 19 `.factory/claims.json` commands: PASS.
+- `PLAYWRIGHT_BASE_URL=https://restore-compatibility-drill.sociobot.in npm test`:
+  PASS — 5 Rust tests and 32 Playwright tests.
+- `npm run build`: PASS — release CLI and `dist/site/` produced.
+- Live route/link crawl: known routes and links passed; unknown route returned
+  the designed HTTP 404.
+- Browser demo traffic: same-origin only; localStorage, sessionStorage,
+  IndexedDB, OPFS, and cookies empty.
+- Real CLI demo: reached the documented actionable exit 3 because this worker
+  has no Docker or Podman; the source sample hash was unchanged. The
+  controlled-runtime CLI demo claim passed.
 
-## Run and deploy
+## Findings left for repair
 
-Run `npm ci && npm test`. Build the release with `npm run build`; it writes the
-binary to `target/release/restore-drill` and the static site to `dist/site/`.
-The factory deploys `dist/site/`.
+- F-6-1: remove or implement the landing promise that every receipt contains a
+  next step.
+- F-6-2: register and test the Rust 1.85 minimum, or remove the exact version.
+- F-6-3: replace or remove the first-screen slogan “A recovery check you can
+  keep.”
+- F-6-4: keep copy buttons action-named and provide announced, actionable
+  clipboard failure text.
+- F-6-5: replace the 404 press/restore metaphor with literal 404 copy.
 
-## Known gaps
+## Next step
 
-None.
+Repair all five findings, deploy, and rerun the entire adversarial checklist
+from a clean clone and fresh live browser contexts.
