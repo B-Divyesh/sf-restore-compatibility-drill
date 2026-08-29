@@ -1,0 +1,18 @@
+local/live SHA-256
+f45eddc40e52f9a24698b8b589eb880bebbe876a59d65c65fb5aa926c3e467e2  dist/site/index.html
+f45eddc40e52f9a24698b8b589eb880bebbe876a59d65c65fb5aa926c3e467e2  /tmp/restore-drill-live-hash.k3BKou/index.html
+8d27d982b777da31d436e2575bcdc8d5b9f9bbd30bad7f29bbc02e60143dfdbd  dist/site/assets/index-Ccsbft0o.js
+8d27d982b777da31d436e2575bcdc8d5b9f9bbd30bad7f29bbc02e60143dfdbd  /tmp/restore-drill-live-hash.k3BKou/index-Ccsbft0o.js
+1d2bfe188d43bbbd658843e2c30d3014ac7afeac9440d5fd4f5d18543c178ec1  dist/site/assets/index-C6LBqC8_.css
+1d2bfe188d43bbbd658843e2c30d3014ac7afeac9440d5fd4f5d18543c178ec1  /tmp/restore-drill-live-hash.k3BKou/index-C6LBqC8_.css
+route status
+/ 200 https://restore-compatibility-drill.sociobot.in/
+/?demo=1 200 https://restore-compatibility-drill.sociobot.in/?demo=1
+/demo 200 https://restore-compatibility-drill.sociobot.in/demo
+/privacy 200 https://restore-compatibility-drill.sociobot.in/privacy
+/terms 200 https://restore-compatibility-drill.sociobot.in/terms
+/route-that-does-not-exist 404 https://restore-compatibility-drill.sociobot.in/route-that-does-not-exist
+asset headers
+content-type: text/javascript
+cache-control: public, max-age=31536000, immutable
+x-content-type-options: nosniff

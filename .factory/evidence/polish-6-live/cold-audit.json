@@ -1,0 +1,69 @@
+{
+  "errors": [],
+  "requests": [
+    "https://restore-compatibility-drill.sociobot.in/",
+    "https://restore-compatibility-drill.sociobot.in/assets/index-Ccsbft0o.js",
+    "https://restore-compatibility-drill.sociobot.in/assets/index-C6LBqC8_.css",
+    "https://restore-compatibility-drill.sociobot.in/assets/restore-press-BTJzVAyz.webp"
+  ],
+  "findings": {
+    "F-6-1": "Unsupported next-step promise absent",
+    "F-6-3": "Literal first-screen label present",
+    "F-6-4": "Action label retained; associated alert gives cause and manual-copy recovery",
+    "F-6-5": "Unknown path returns HTTP 404 with literal error label and heading",
+    "F-6-2": "Rust 1.85 claim passed separately against public source"
+  },
+  "demo": {
+    "factBoxes": [
+      {
+        "text": "Runs Postgres in a disposable local container.",
+        "top": 583.96875,
+        "bottom": 654.5625
+      },
+      {
+        "text": "Keeps your backup on your machine.",
+        "top": 654.5625,
+        "bottom": 700.359375
+      },
+      {
+        "text": "The CLI is free and writes signed JSON receipts.",
+        "top": 700.359375,
+        "bottom": 770.953125
+      }
+    ],
+    "proofBoxes": [
+      {
+        "text": "Postgres 15.8 → 15",
+        "top": 464.59375,
+        "bottom": 514.1875
+      },
+      {
+        "text": "restore_ready",
+        "top": 521.1875,
+        "bottom": 545.984375
+      },
+      {
+        "text": "restore_reader",
+        "top": 552.984375,
+        "bottom": 577.78125
+      },
+      {
+        "text": "public.restore_probe",
+        "top": 584.78125,
+        "bottom": 634.375
+      },
+      {
+        "text": "Signature verified",
+        "top": 641.375,
+        "bottom": 666.171875
+      }
+    ],
+    "storage": {
+      "local": [],
+      "session": [],
+      "databases": [],
+      "opfs": []
+    }
+  },
+  "routing": "Forward and back navigation focus the route h1"
+}

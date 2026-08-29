@@ -1,52 +1,76 @@
-# Restore Drill — review 6 handoff
+# Restore Drill — polish 6 handoff
 
 ## Outcome
 
-Adversarial review 6 is complete with a **FAIL** verdict. Product code was not
-modified. The full report is in [review-6.md](review-6.md).
+Perfection-loop round 6 is complete. All findings from reviews 1–6 and both
+earlier verification reports are closed in source and on the live site.
 
-## What was done
+- Implementation commit: `18bca79ada9437e6cc1f7b44b9e0bd6c87f5f182`
+- Deployment: `4ad1d411-56fc-4b93-866e-248a8663dd99`
+- Live site: <https://restore-compatibility-drill.sociobot.in>
+- Canonical demo: <https://restore-compatibility-drill.sociobot.in/?demo=1>
 
-- Cold-opened the live home page in fresh 390×844 and 1440×900 contexts.
-- Exercised the one-click replay, Reset, reload, storage isolation, request
-  boundary, offline reload, and clipboard failure state.
-- Ran the CLI demo from a fresh temporary directory and compared the bundled
-  sample hash before and after.
-- Ran all 19 exact claim commands independently from a clean clone.
-- Ran the complete 32-test suite against production and built both artifacts.
-- Crawled every rendered link and checked metadata, routes, 404 behavior,
-  history focus, accessibility coverage, cache policy, and visual identity.
-- Rechecked every finding from reviews 1–5 and both earlier verification
-  reports in the live product and current source.
-- Audited every landing-page and README sentence, heading, and action label.
+## What changed
 
-## Verification
+- Replaced the first-screen slogan with “Local Postgres restore drill.”
+- Removed the unsupported promise that every passing receipt has a next step.
+- Added a registered Rust 1.85 minimum-toolchain claim and real locked build.
+- Kept copy-button action names stable and added associated success/status and
+  actionable clipboard-denial messages.
+- Rewrote the designed 404 to use “Error 404” and “Page not found” while
+  preserving the product's offset-risograph identity.
+- Updated the copy audit, claims manifest, catalog description, regression
+  coverage, build stamp, and cumulative polish record.
 
-- Clean clone: `/tmp/restore-review6-claims.WbYCPz/repo` at `9c03cc6`.
-- All 19 `.factory/claims.json` commands: PASS.
-- `PLAYWRIGHT_BASE_URL=https://restore-compatibility-drill.sociobot.in npm test`:
-  PASS — 5 Rust tests and 32 Playwright tests.
-- `npm run build`: PASS — release CLI and `dist/site/` produced.
-- Live route/link crawl: known routes and links passed; unknown route returned
-  the designed HTTP 404.
-- Browser demo traffic: same-origin only; localStorage, sessionStorage,
-  IndexedDB, OPFS, and cookies empty.
-- Real CLI demo: reached the documented actionable exit 3 because this worker
-  has no Docker or Podman; the source sample hash was unchanged. The
-  controlled-runtime CLI demo claim passed.
+The canonical one-click demo remains isolated and automatic. Its persistent
+banner, Reset demo, Start for real, realistic receipt, same-origin boundary,
+empty storage, and offline reload all pass.
 
-## Findings left for repair
+## Exact verification
 
-- F-6-1: remove or implement the landing promise that every receipt contains a
-  next step.
-- F-6-2: register and test the Rust 1.85 minimum, or remove the exact version.
-- F-6-3: replace or remove the first-screen slogan “A recovery check you can
-  keep.”
-- F-6-4: keep copy buttons action-named and provide announced, actionable
-  clipboard failure text.
-- F-6-5: replace the 404 press/restore metaphor with literal 404 copy.
+- Every one of the 20 `.factory/claims.json` commands passed independently
+  from public clean clone `/tmp/restore-drill-polish6-public.VMtX29/repo` at
+  `18bca79`. See [clean claim summary](evidence/polish-6-clean-public/summary.txt).
+- A separate clean clone at `/tmp/restore-drill-polish6-clean.unp7Pn/repo`
+  passed `npm test` (5 Rust tests and 36 Playwright tests) and `npm run build`.
+  See [full suite](evidence/polish-6-clean-local/full-suite.log) and
+  [build output](evidence/polish-6-clean-local/build.log).
+- Formatting and package checks passed: `cargo fmt --check`, Clippy with
+  warnings denied, `cargo package --locked --no-verify`, dependency audit,
+  claims/tag cardinality, and `git diff --check`.
+- Production `npm test` passed all 36 browser tests after deployment. Coverage
+  includes routes, exact titles and metadata, canonical URLs, heading focus,
+  true HTTP 404 behavior, legal links, phone layout, 44 px targets, reduced
+  motion, axe, keyboard, privacy, offline, demo reset, and clipboard denial.
+  See [production suite](evidence/polish-6-live/production-suite.log).
+- Cold production audit: no console errors; one request origin; empty
+  localStorage, sessionStorage, IndexedDB, and OPFS; all three facts end by
+  771 px; demo proof ends by 666 px in a 390×844 viewport. See
+  [cold audit](evidence/polish-6-live/cold-audit.json), [home](evidence/polish-6-live/cold-home-mobile.png),
+  [demo](evidence/polish-6-live/cold-demo-mobile.png), [clipboard denial](evidence/polish-6-live/clipboard-error-mobile.png),
+  and [404](evidence/polish-6-live/cold-404-desktop.png).
+- Worker URL checks found one `h1`, one `main`, `lang="en"`, complete alt text,
+  labelled buttons, and zero console errors on home and demo.
+- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100,
+  SEO 100; LCP 1.9 s, CLS 0, TBT 30 ms.
+- Production JavaScript is 15.05 KB raw / 5.27 KB gzip. CSS is 12.59 KB raw /
+  3.60 KB gzip. Live HTML, JS, and CSS SHA-256 hashes match `dist/site/`.
 
-## Next step
+## Run and package
 
-Repair all five findings, deploy, and rerun the entire adversarial checklist
-from a clean clone and fresh live browser contexts.
+```sh
+npm ci
+npm test
+npm run build
+cargo package --locked --no-verify
+```
+
+`npm run build` produces the release CLI and `dist/site/`. Registry
+credentials remain factory-owned; do not publish from this checkout.
+
+## Known gaps and next steps
+
+No product or review gaps remain. This worker has no Docker or Podman daemon,
+so real container orchestration was verified with the controlled runtime used
+by the CLI integration claims. The shipped demo command still detects an
+absent runtime and returns the documented actionable exit code.

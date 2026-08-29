@@ -1,0 +1,22 @@
+Public clean clone: /tmp/restore-drill-polish6-public.VMtX29/repo
+Commit: 18bca79ada9437e6cc1f7b44b9e0bd6c87f5f182
+PASS sample-demo — npm test -- --grep @claim:sample-demo
+PASS browser-privacy — npm test -- --grep @claim:browser-privacy
+PASS demo-no-persistence — npm test -- --grep @claim:demo-no-persistence
+PASS install-from-site — npm test -- --grep @claim:install-from-site
+PASS rust-1-85-install — npm test -- --grep @claim:rust-1-85-install
+PASS free-cli — npm test -- --grep @claim:free-cli
+PASS isolated-container — npm test -- --grep @claim:isolated-container
+PASS data-tmpfs-size — npm test -- --grep @claim:data-tmpfs-size
+PASS backup-local — npm test -- --grep @claim:backup-local
+PASS newer-version — npm test -- --grep @claim:newer-version
+PASS signed-receipt — npm test -- --grep @claim:signed-receipt
+PASS default-signing-key — npm test -- --grep @claim:default-signing-key
+PASS schema-readiness — npm test -- --grep @claim:schema-readiness
+PASS cli-demo — npm test -- --grep @claim:cli-demo
+PASS podman-runtime — npm test -- --grep @claim:podman-runtime
+PASS dump-formats — npm test -- --grep @claim:dump-formats
+PASS json-output — npm test -- --grep @claim:json-output
+PASS ci-mode — npm test -- --grep @claim:ci-mode
+PASS no-production-url — npm test -- --grep @claim:no-production-url
+PASS no-telemetry — npm test -- --grep @claim:no-telemetry

@@ -1,0 +1,44 @@
+
+> restore-compatibility-drill@0.1.0 test
+> cargo test && npm run typecheck && npm run build:site && playwright test
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/main.rs (target/debug/deps/restore_drill-237e65ae861dd8a4)
+
+running 5 tests
+test tests::catches_transaction_timeout_on_old_target ... ok
+test tests::catches_newer_source_major ... ok
+test tests::reads_receipts_from_before_the_tmpfs_field ... ok
+test tests::validates_image_tags_and_names ... ok
+test tests::signs_and_detects_receipt_changes ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+> restore-compatibility-drill@0.1.0 typecheck
+> tsc --noEmit
+
+
+> restore-compatibility-drill@0.1.0 build:site
+> vite build --config site/vite.config.ts && node scripts/postbuild.mjs
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/site/index.html                            1.82 kB │ gzip: 0.68 kB
+../dist/site/assets/restore-press-BTJzVAyz.webp  196.92 kB
+../dist/site/assets/index-C6LBqC8_.css            12.59 kB │ gzip: 3.60 kB
+../dist/site/assets/index-Ccsbft0o.js             15.05 kB │ gzip: 5.27 kB │ map: 22.79 kB
+✓ built in 139ms
+[WebServer] (node:13755) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 36 tests using 1 worker
+(node:13773) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13773) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+····································
+  36 passed (1.1m)
