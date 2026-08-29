@@ -28,6 +28,13 @@
     "sandbox": "fresh temporary directory; resolve the linked public GitHub main ref, clone and detach that exact public commit, install with the published command, and run restore-drill --help"
   },
   {
+    "id": "rust-1-85-install",
+    "claim": "The locked CLI builds with Rust 1.85 and its command help runs.",
+    "where": "Cargo package metadata and README install section",
+    "test": "npm test -- --grep @claim:rust-1-85-install",
+    "sandbox": "clean checkout; install the minimal Rust 1.85.0 toolchain, build the locked dependency graph in a fresh target directory, and run restore-drill --help"
+  },
+  {
     "id": "free-cli",
     "claim": "The Restore Drill CLI is free and the site has no unavailable purchase link.",
     "where": "README and landing page",

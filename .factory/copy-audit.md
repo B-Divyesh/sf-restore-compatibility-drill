@@ -1,12 +1,12 @@
-# Copy audit — perfection loop 5
+# Copy audit — perfection loop 6
 
-Re-audited 28 August 2026. Counts treat hyphenated terms, commands, and version tokens as one word. No sentence exceeds 22 words or uses a banned plain-words term.
+Re-audited 29 August 2026. Counts treat hyphenated terms, commands, and version tokens as one word. No sentence exceeds 22 words or uses a banned plain-words term.
 
 ## First screen
 
 | Copy | Words | Result |
 | --- | ---: | --- |
-| A recovery check you can keep | 6 | Pass |
+| Local Postgres restore drill | 4 | Pass; literal product label |
 | Prove your Postgres backup restores | 5 | Pass |
 | For teams that need a recovery answer before an outage, not during one. | 13 | Pass |
 | Try it with sample data | 5 | Pass; primary action |
@@ -37,13 +37,17 @@ The first screen says what the product does, who needs it, what to do first, and
 | The CLI mounts your backup read-only. | 6 | Pass; `backup-local` |
 | The container has no network or published port. | 8 | Pass; `isolated-container` |
 | Keep the result. | 3 | Pass |
-| Pass or fail, the CLI writes a signed JSON receipt with the next step. | 14 | Pass; `signed-receipt` |
+| Pass or fail, the CLI writes a signed JSON receipt. | 10 | Pass; `signed-receipt` |
 | Local install | 2 | Pass; eyebrow |
 | Run your first real drill | 5 | Pass; heading |
 | Clone the public source, build the single Rust binary, then point it at a local backup file. | 16 | Pass; `install-from-site` |
 | Get the source on GitHub | 5 | Pass; destination-naming link |
 | Copy install command | 3 | Pass; result-naming button |
 | Copy drill command | 3 | Pass; result-naming button |
+| Install command copied. | 3 | Pass; announced success status |
+| Drill command copied. | 3 | Pass; announced success status |
+| Your browser blocked clipboard access. | 5 | Pass; failure cause |
+| Select the command and copy it manually. | 7 | Pass; recovery step |
 | For a larger backup, set `--data-tmpfs-size 8g` to give Postgres an 8 GB temporary disk. | 14 | Pass; `data-tmpfs-size` |
 | This is not another backup service | 6 | Pass; heading |
 | It does not connect to production. | 6 | Pass; `no-production-url` |
@@ -93,8 +97,8 @@ The first screen says what the product does, who needs it, what to do first, and
 | A passed drill records one test. | 6 | Pass; limitation |
 | It does not guarantee every recovery path or future backup will pass. | 11 | Pass; limitation |
 | The software is provided without warranty under the MIT License. | 10 | Pass |
-| This sheet missed the press | 5 | Pass; eyebrow |
-| This page was not restored | 5 | Pass; 404 heading |
+| Error 404 | 2 | Pass; literal error label |
+| Page not found | 3 | Pass; literal 404 heading |
 | The address does not match a page in this build. | 10 | Pass |
 | Return home | 2 | Pass; action |
 
@@ -115,7 +119,7 @@ The first screen says what the product does, who needs it, what to do first, and
 | Use a sanitized backup when your policy requires it. | 9 | Pass; instruction |
 | Set `--data-tmpfs-size 8g` when Postgres needs an 8 GB temporary disk. | 10 | Pass; `data-tmpfs-size` |
 | Accepted sizes range from `512m` to `64g`. | 7 | Pass; `data-tmpfs-size` |
-| You need Rust 1.85 or newer and Docker or Podman. | 9 | Pass; prerequisite |
+| You need Rust 1.85 or newer and Docker or Podman. | 9 | Pass; `rust-1-85-install` and runtime prerequisite |
 | The package starts at version `0.1.0` and builds one binary named `restore-drill`. | 11 | Pass; `install-from-site` |
 | The command writes the sample backup, receipt, and signing key to a new directory under `/tmp`. | 16 | Pass; `cli-demo` |
 | It prints that directory before starting the real container restore. | 10 | Pass; `cli-demo` |
@@ -171,4 +175,4 @@ All route titles are 60 characters or fewer. All descriptions are 155 characters
 
 ## Catalog description
 
-“Prove a Postgres backup restores before an outage” — 8 words, 49 characters, starts with a verb.
+“Prove a Postgres backup restores into its intended version before an outage” — 12 words, 75 characters, starts with a verb.

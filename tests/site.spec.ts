@@ -92,6 +92,26 @@ test('@claim:install-from-site public instructions install a working command fro
   expect(help.stdout).toContain('Restore a backup in an isolated disposable Postgres container');
 });
 
+test('@claim:rust-1-85-install builds the locked CLI with the documented minimum toolchain', async () => {
+  test.setTimeout(180_000);
+  const target = mkdtempSync(join(tmpdir(), 'restore-drill-rust-1-85-'));
+  execFileSync('rustup', ['toolchain', 'install', '1.85.0', '--profile', 'minimal'], {
+    cwd: repo,
+    stdio: 'pipe',
+    timeout: 120_000,
+  });
+  const version = execFileSync('rustup', ['run', '1.85.0', 'rustc', '--version'], { encoding: 'utf8' });
+  expect(version.trim()).toMatch(/^rustc 1\.85\.0 /);
+  execFileSync('rustup', ['run', '1.85.0', 'cargo', 'build', '--locked', '--target-dir', target], {
+    cwd: repo,
+    stdio: 'pipe',
+    timeout: 120_000,
+  });
+  const help = spawnSync(join(target, 'debug', 'restore-drill'), ['--help'], { encoding: 'utf8' });
+  expect(help.status, help.stderr).toBe(0);
+  expect(help.stdout).toContain('Restore a backup in an isolated disposable Postgres container');
+});
+
 test('@claim:free-cli @regression:unavailable-checkout does not advertise an unavailable purchase', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', request => requests.push(request.url()));
@@ -128,7 +148,7 @@ test('every route sets its title, metadata, canonical URL, heading, and legal li
     ['/demo', 'Demo — Restore Drill', 'Run a sample restore drill'],
     ['/privacy', 'Privacy — Restore Drill', 'Privacy at Restore Drill'],
     ['/terms', 'Terms — Restore Drill', 'Terms for Restore Drill'],
-    ['/missing-page', 'Page not found — Restore Drill', 'This page was not restored'],
+    ['/missing-page', 'Page not found — Restore Drill', 'Page not found'],
   ] as const;
   for (const [route, title, heading] of routes) {
     await page.goto(route);
@@ -239,6 +259,49 @@ test('all three product facts fit in the cold desktop first screen', async ({ pa
     expect(box!.y).toBeGreaterThanOrEqual(0);
     expect(box!.y + box!.height).toBeLessThanOrEqual(900);
   }
+});
+
+test('landing and 404 use literal task and error wording', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.hero .eyebrow')).toHaveText('Local Postgres restore drill');
+  await expect(page.getByText('Pass or fail, the CLI writes a signed JSON receipt.', { exact: true })).toBeVisible();
+  await expect(page.getByText('with the next step', { exact: false })).toHaveCount(0);
+  await page.goto('/missing-page');
+  await expect(page.locator('.not-found .eyebrow')).toHaveText('Error 404');
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
+  await expect(page.getByText('This page was not restored', { exact: true })).toHaveCount(0);
+});
+
+test('copy controls keep their action names and announce success', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => undefined },
+    });
+  });
+  await page.goto('/#install');
+  const button = page.getByRole('button', { name: 'Copy install command' });
+  await button.click();
+  await expect(button).toHaveText('Copy install command');
+  await expect(page.locator('#install-copy-feedback')).toHaveAttribute('role', 'status');
+  await expect(page.locator('#install-copy-feedback')).toHaveText('Install command copied.');
+});
+
+test('clipboard denial keeps the action and gives an associated recovery step', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => { throw new DOMException('Clipboard access denied', 'NotAllowedError'); } },
+    });
+  });
+  await page.goto('/#install');
+  const button = page.getByRole('button', { name: 'Copy drill command' });
+  await expect(button).toHaveAttribute('aria-describedby', 'drill-copy-feedback');
+  await button.click();
+  await expect(button).toHaveText('Copy drill command');
+  const alert = page.locator('#drill-copy-feedback');
+  await expect(alert).toHaveAttribute('role', 'alert');
+  await expect(alert).toHaveText('Your browser blocked clipboard access. Select the command and copy it manually.');
 });
 
 test('mobile controls meet the 44px touch target baseline', async ({ page }) => {

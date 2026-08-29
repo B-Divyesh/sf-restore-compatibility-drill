@@ -98,8 +98,12 @@ p { max-width: 68ch; }
 .install p > a, .legal-page article > p:last-child a { display: inline-flex; min-height: 44px; align-items: center; }
 .install :focus-visible, .demo-banner :focus-visible, .terminal :focus-visible { outline-color: var(--yellow); }
 .command-block { min-width: 0; }
+.copy-group { display: flow-root; }
 .command-block pre { margin: 0 0 20px; padding: 24px; overflow-wrap: anywhere; white-space: pre-wrap; border: 2px solid #fffaf0; background: var(--night); color: var(--night-text); }
 .copy-button { float: right; position: relative; z-index: 1; min-width: 74px; margin: 8px; padding-inline: 12px; border: 1px solid #fffaf0; color: #fffaf0; background: transparent; cursor: pointer; }
+.copy-feedback { margin: -8px 0 24px; padding: 8px 12px; border-left: 4px solid var(--yellow); color: #fffaf0; background: #11191666; }
+.copy-feedback:empty { display: none; }
+.copy-feedback[role="alert"] { border-left-color: #ff8d82; }
 
 .boundaries { max-width: 1192px; margin: 0 auto; padding: 104px 24px; display: grid; grid-template-columns: 5fr 6fr; gap: 72px; }
 .boundaries ul { margin: 0; padding: 0; list-style: none; }

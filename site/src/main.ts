@@ -33,7 +33,7 @@ const shell = (content: string, demo = false): string => `
   <footer>
     <p><strong>${PRODUCT}</strong> — prove a Postgres backup restores.</p>
     <nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in" rel="external">Built by Param Factory <span class="sr-only">(external)</span></a></nav>
-    <p class="build">v0.1.0 · build 2026.08.28</p>
+    <p class="build">v0.1.0 · build 2026.08.29</p>
   </footer>`;
 
 const terminal = (interactive = false): string => `
@@ -56,7 +56,7 @@ const homePage = (): string => shell(`
   <main id="main">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">A recovery check you can keep</p>
+        <p class="eyebrow">Local Postgres restore drill</p>
         <h1 tabindex="-1">Prove your Postgres backup restores</h1>
         <p class="lede">For teams that need a recovery answer before an outage, not during one.</p>
         <div class="hero-action"><a class="button" href="/?demo=1" data-link>Try it with sample data</a><span>Open a browser replay of the sample drill.</span></div>
@@ -96,7 +96,7 @@ const homePage = (): string => shell(`
       <ol>
         <li><strong>Name the target.</strong><span>Choose a Postgres version, temporary disk size, and expected schemas, extensions, roles, and tables.</span></li>
         <li><strong>Restore in isolation.</strong><span>The CLI mounts your backup read-only. The container has no network or published port.</span></li>
-        <li><strong>Keep the result.</strong><span>Pass or fail, the CLI writes a signed JSON receipt with the next step.</span></li>
+        <li><strong>Keep the result.</strong><span>Pass or fail, the CLI writes a signed JSON receipt.</span></li>
       </ol>
     </section>
 
@@ -108,17 +108,23 @@ const homePage = (): string => shell(`
         <p><a href="${SOURCE_URL}" rel="external">Get the source on GitHub <span aria-hidden="true">↗</span><span class="sr-only"> (external)</span></a></p>
       </div>
       <div class="command-block">
-        <button class="copy-button" data-copy="git clone ${SOURCE_URL}.git&#10;cd sf-restore-compatibility-drill&#10;cargo install --path . --locked">Copy install command</button>
-        <pre><code>git clone ${SOURCE_URL}.git
+        <div class="copy-group">
+          <button class="copy-button" data-copy-label="Install command" data-copy="git clone ${SOURCE_URL}.git&#10;cd sf-restore-compatibility-drill&#10;cargo install --path . --locked" aria-describedby="install-copy-feedback">Copy install command</button>
+          <pre><code>git clone ${SOURCE_URL}.git
 cd sf-restore-compatibility-drill
 cargo install --path . --locked</code></pre>
-        <button class="copy-button" data-copy="restore-drill run --dump backup.sql --postgres 15 --expect-schema public --expect-extension pgcrypto --expect-table public.accounts">Copy drill command</button>
-        <pre><code>restore-drill run \\
+          <p class="copy-feedback" id="install-copy-feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+        <div class="copy-group">
+          <button class="copy-button" data-copy-label="Drill command" data-copy="restore-drill run --dump backup.sql --postgres 15 --expect-schema public --expect-extension pgcrypto --expect-table public.accounts" aria-describedby="drill-copy-feedback">Copy drill command</button>
+          <pre><code>restore-drill run \\
   --dump backup.sql \\
   --postgres 15 \\
   --expect-schema public \\
   --expect-extension pgcrypto \\
   --expect-table public.accounts</code></pre>
+          <p class="copy-feedback" id="drill-copy-feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
         <p>For a larger backup, set <code>--data-tmpfs-size 8g</code> to give Postgres an 8 GB temporary disk.</p>
       </div>
     </section>
@@ -176,7 +182,7 @@ const legalPage = (kind: 'privacy' | 'terms'): string => {
   </article></main>`);
 };
 
-const notFoundPage = (): string => shell(`<main id="main" class="not-found"><div class="misprint" aria-hidden="true">404</div><div><p class="eyebrow">This sheet missed the press</p><h1 tabindex="-1">This page was not restored</h1><p>The address does not match a page in this build.</p><a class="button" href="/" data-link>Return home</a></div></main>`);
+const notFoundPage = (): string => shell(`<main id="main" class="not-found"><div class="misprint" aria-hidden="true">404</div><div><p class="eyebrow">Error 404</p><h1 tabindex="-1">Page not found</h1><p>The address does not match a page in this build.</p><a class="button" href="/" data-link>Return home</a></div></main>`);
 
 const metadata: Record<Route, { title: string; description: string }> = {
   home: {
@@ -238,11 +244,20 @@ function bindNavigation(): void {
 
 function bindCommon(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(button => button.addEventListener('click', async () => {
+    const feedbackId = button.getAttribute('aria-describedby');
+    const feedback = feedbackId ? document.getElementById(feedbackId) : null;
+    const label = button.dataset.copyLabel ?? 'Command';
     try {
       await navigator.clipboard.writeText(button.dataset.copy ?? '');
-      button.textContent = 'Copied';
+      if (feedback) {
+        feedback.setAttribute('role', 'status');
+        feedback.textContent = `${label} copied.`;
+      }
     } catch {
-      button.textContent = 'Copy failed';
+      if (feedback) {
+        feedback.setAttribute('role', 'alert');
+        feedback.textContent = 'Your browser blocked clipboard access. Select the command and copy it manually.';
+      }
     }
   }));
 }
